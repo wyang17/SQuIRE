@@ -84,7 +84,7 @@ If you have trouble obtaining these items on your own, you can use the steps fet
 
 #### Pipeline Steps ####
 
-<img align="center" width="705" height="600" src="images/overview_squire.png">
+<img align="center" width="825" height="600" src="images/overview_squire.png">
 
 Preparation
 1)    [Fetch:](#squire-fetch)
@@ -276,7 +276,7 @@ The following information is included in the file:
   -e EM, --EM EM | Run estimation-maximization on TE counts given number of times. Optional, default = False
   -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False
 
-<img align="center" width="400" height="470" src="images/count_figure.png">
+<img align="center" width="825" height="600" src="images/count_figure.png">
 
 
 ### Analysis Stage ###
