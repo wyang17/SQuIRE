@@ -276,7 +276,7 @@ The following information is included in the file:
   -e EM, --EM EM | Run estimation-maximization on TE counts given number of times. Optional, default = False
   -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False
 
-<img align="center" width="825" height="600" src="images/count_figure.png">
+<img align="center" width="825" height="600" src="images/Count_overview.png">
 
 
 ### Analysis Stage ###
