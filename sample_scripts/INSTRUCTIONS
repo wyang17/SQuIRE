@@ -1,17 +1,16 @@
-INSTRUCTIONS
-1) Copy sample_scripts folder to project folder
-mkdir <project folder>/scripts
-cp sample_scripts/* <project folder>/scripts
+1. Copy sample_scripts folder to project folder
+    * `mkdir <project folder>/scripts`
+    * cp SQuIRE/sample_scripts/* <project folder>/scripts`
+    * cd <project folder>/scripts`
+2. Fill out the arguments.sh file
+3. Replace "squire@email.com" in the `#$ -M squire@email.com` line with your email address to get alert of script completion and memory usage
+4. Submit jobs to SGE cluster (the -cwd option results in error and output files associated to stay in your current working directory)
 
-2) Fill out arguments.sh file
-3) Edit scripts with email address to get alert of script completion and memory usage
-4) Submit jobs to SGE cluster
+    * qsub -cwd fetch.sh arguments.sh`
+    * qsub -cwd clean.sh arguments.sh`
+    * qsub -cwd loop_map.sh arguments.sh`
+    * qsub -cwd loop_count.sh arguments.sh`
+    * qsub -cwd call.sh arguments.sh`
+    * qsub -cwd loop_draw.sh arguments.sh`
 
-#(the -cwd option results in error and output files associated to stay in your current working directory)
-
-qsub -cwd fetch.sh arguments.sh
-qsub -cwd clean.sh arguments.sh
-qsub -cwd loop_map.sh arguments.sh
-qsub -cwd loop_count.sh arguments.sh
-qsub -cwd call.sh arguments.sh
-qsub -cwd loop_draw.sh arguments.sh 
+5. If a memory or segmentation fault error occurs, edit the `#$ -l mem_free` and `#$ -l h_vmem` lines to increase memory usage for the appropriate script.
