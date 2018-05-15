@@ -1,0 +1,17 @@
+INSTRUCTIONS
+1) Copy sample_scripts folder to project folder
+mkdir <project folder>/scripts
+cp sample_scripts/* <project folder>/scripts
+
+2) Fill out arguments.sh file
+3) Edit scripts with email address to get alert of script completion and memory usage
+4) Submit jobs to SGE cluster
+
+#(the -cwd option results in error and output files associated to stay in your current working directory)
+
+qsub -cwd fetch.sh arguments.sh
+qsub -cwd clean.sh arguments.sh
+qsub -cwd loop_map.sh arguments.sh
+qsub -cwd loop_count.sh arguments.sh
+qsub -cwd call.sh arguments.sh
+qsub -cwd loop_draw.sh arguments.sh 
