@@ -17,9 +17,9 @@ import Fetch as s2
 import Clean as s3
 import Map as s4
 import Count as s5
-import Call as s7
-import Draw as s8
-import Seek as s9
+import Call as s6
+import Draw as s7
+import Seek as s8
 
 
 #from squire import __version__
@@ -29,7 +29,7 @@ def main():
     ## create the top level parser
     parser = argparse.ArgumentParser()
     parser._positionals.title = "SQuIRE Steps"
-    #parser.add_argument('--version', action="version", version=__version__, help="print SQuIRE version number")
+    parser.add_argument('--version', action="version", version=__version__, help="print SQuIRE version number")
     subparsers = parser.add_subparsers()
     # create subparser for Download Step b, "Build"
     parser1 = subparsers.add_parser("Build", help = "Installs required software")
@@ -107,60 +107,44 @@ def main():
 ## set which program to be associated with this parser
     parser5.set_defaults(func=s5.main)
 
-    # parser6 = subparsers.add_parser("Flag", help = """Assembles mapped reads into transcripts, merges nearby TEs, and flags transcript type""")
-    # parser6._optionals.title = "Arguments"
-    # parser6.add_argument("-m","--map_folder", help = "Folder location(s) of outputs from SQuIRE Map (optional, default = 'squire_map')", type = str, metavar = "<folder>",default="squire_map")
-    # parser6.add_argument("-f","--fetch_folder", help = "Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch'",type = str, metavar = "<folder>",default="squire_fetch")
-    # parser6.add_argument("-c","--count_folder", help = "Folder location(s) of outputs from SQuIRE Count (optional, default = 'squire_count')", type = str, metavar = "<folder>",default="squire_count")
-    # parser6.add_argument("-o","--flag_folder", help = "Destination folder for output files (optional; default='squire_flag')", type = str, metavar = "<folder>", default="squire_flag")
-    # parser6.add_argument("-r","--read_length", help = "Read length", type = int, metavar = "<int>",required=True)
-    # parser6.add_argument("-b","--build", help = "UCSC designation for genome build, eg. 'hg37' (required if more than 1 build in fetch_folder)", type=str, metavar = "<build>",default=False)
-    # parser6.add_argument("-s","--strandedness", help = " '0' if unstranded, 1 if first-strand eg Illumina Truseq, dUTP, NSR, NNSR, 2 if second-strand, eg Ligation, Standard  (optional,default=1)", type = int, metavar = "<file>", default = False)
-    # parser6.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
-    # parser6.add_argument("-n","--name", help = "Basename for bam file (required if more than one bam file in map_folder)", type = str, metavar = "<str>",default=False)
-    # parser6.add_argument("-N","--projectname", help = "Basename for project", type = str, metavar = "<str>",default=False)
-    # parser6.add_argument("-t","--tempfolder", help = "Folder for tempfiles (optional; default=outfolder')", type = str, metavar = "<folder>", default=False)
-    # parser6.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
-    # parser6.set_defaults(func=s6.main)
-
-    parser7 = subparsers.add_parser("Call",help = """Performs differential expression analysis on TEs and genes""")
-    parser7._optionals.title = "Arguments"
-    parser7.add_argument("-1","--group1", help = "List of basenames for group1 (Treatment) samples, can also provide string pattern common to all group1 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
-    parser7.add_argument("-2","--group2", help = "List of basenames for group2 (Control) samples, can also provide string pattern common to all group2 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
-    parser7.add_argument("-A","--condition1", help = "Name of condition for group1",required = True, type = str, metavar = "<str>")
-    parser7.add_argument("-B","--condition2", help = "Name of condition for group2",required = True, type = str, metavar = "<str>")
+    parser6 = subparsers.add_parser("Call",help = """Performs differential expression analysis on TEs and genes""")
+    parser6._optionals.title = "Arguments"
+    parser6.add_argument("-1","--group1", help = "List of basenames for group1 (Treatment) samples, can also provide string pattern common to all group1 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
+    parser6.add_argument("-2","--group2", help = "List of basenames for group2 (Control) samples, can also provide string pattern common to all group2 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
+    parser6.add_argument("-A","--condition1", help = "Name of condition for group1",required = True, type = str, metavar = "<str>")
+    parser6.add_argument("-B","--condition2", help = "Name of condition for group2",required = True, type = str, metavar = "<str>")
     parser.add_argument("-i","--count_folder", help = "Folder location of outputs from SQuIRE Count (optional, default = 'squire_count')", type = str, metavar = "<folder>",default="squire_count")
-    parser7.add_argument("-o","--call_folder", help = "Destination folder for output files (optional; default='squire_call')", type = str, metavar = "<folder>", default="squire_call")
-    parser7.add_argument("-s","--subfamily", help = "Compare TE counts by subfamily. Otherwise, compares TEs at locus level (optional; default=False)", action = "store_true", default = False)
-    parser7.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
-    parser7.add_argument("-N","--projectname", help = "Basename for project", type = str, metavar = "<str>",default=False)
-    parser7.add_argument("-f","--output_format", help = "Output figures as html or pdf", type = str, metavar = "<str>",default="html")
-    parser7.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
+    parser6.add_argument("-o","--call_folder", help = "Destination folder for output files (optional; default='squire_call')", type = str, metavar = "<folder>", default="squire_call")
+    parser6.add_argument("-s","--subfamily", help = "Compare TE counts by subfamily. Otherwise, compares TEs at locus level (optional; default=False)", action = "store_true", default = False)
+    parser6.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
+    parser6.add_argument("-N","--projectname", help = "Basename for project", type = str, metavar = "<str>",default=False)
+    parser6.add_argument("-f","--output_format", help = "Output figures as html or pdf", type = str, metavar = "<str>",default="html")
+    parser6.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
 
+    parser6.set_defaults(func=s6.main)
+
+    parser7 = subparsers.add_parser('Draw', help  = """Makes unique and multi bedgraph files""")
+    parser7._optionals.title = "Arguments"
+    parser7.add_argument("-f","--fetch_folder", help = "Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch')",type = str, metavar = "<folder>",default="squire_fetch")
+    parser7.add_argument("-m","--map_folder", help = "Folder location of outputs from SQuIRE Map (optional, default = 'squire_map')", type = str, metavar = "<folder>", default="squire_map")
+    parser7.add_argument("-o","--draw_folder", help = "Destination folder for output files (optional; default='squire_draw')", type = str, metavar = "<folder>", default="squire_draw")
+    parser7.add_argument("-n","--name", help = "Basename for bam file (required if more than one bam file in map_folder)", type = str, metavar = "<str>",default=False)
+    parser7.add_argument("-s","--strandedness", help = " '0' if unstranded, 1 if first-strand eg Illumina Truseq, dUTP, NSR, NNSR, 2 if second-strand, eg Ligation, Standard  (optional,default=1)", type = int, metavar = "<int>", default = False)
+    parser7.add_argument("-b","--build", help = "UCSC designation for genome build, eg. 'hg38' (required)", type=str, metavar = "<build>",default=False,required=True)
+    parser7.add_argument("-l","--normlib", help = "Normalize bedgraphs by library size (optional; default=False)", action = "store_true", default = False)
+    parser7.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
+    parser7.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
     parser7.set_defaults(func=s7.main)
 
-    parser8 = subparsers.add_parser('Draw', help  = """Makes unique and multi bedgraph files""")
+
+    parser8 = subparsers.add_parser("Seek", help = """Retrieves sequences from chromosome fasta files designated by BED file coordinates""")
     parser8._optionals.title = "Arguments"
-    parser8.add_argument("-f","--fetch_folder", help = "Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch')",type = str, metavar = "<folder>",default="squire_fetch")
-    parser8.add_argument("-m","--map_folder", help = "Folder location of outputs from SQuIRE Map (optional, default = 'squire_map')", type = str, metavar = "<folder>", default="squire_map")
-    parser8.add_argument("-o","--draw_folder", help = "Destination folder for output files (optional; default='squire_draw')", type = str, metavar = "<folder>", default="squire_draw")
-    parser8.add_argument("-n","--name", help = "Basename for bam file (required if more than one bam file in map_folder)", type = str, metavar = "<str>",default=False)
-    parser8.add_argument("-s","--strandedness", help = " '0' if unstranded, 1 if first-strand eg Illumina Truseq, dUTP, NSR, NNSR, 2 if second-strand, eg Ligation, Standard  (optional,default=1)", type = int, metavar = "<int>", default = False)
-    parser8.add_argument("-b","--build", help = "UCSC designation for genome build, eg. 'hg38' (required)", type=str, metavar = "<build>",default=False,required=True)
-    parser8.add_argument("-l","--normlib", help = "Normalize bedgraphs by library size (optional; default=False)", action = "store_true", default = False)
-    parser8.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
-    parser8.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
+    parser8.add_argument("-i","--infile", help = """Repeat genomic coordinates, can be TE_ID, bedfile, or gff (required)""", type=argparse.FileType('r'), metavar = "<file.bed>", required=True)
+    parser8.add_argument("-o","--outfile", help = """Repeat sequences output file (FASTA), can use "-" for stdout (required)""", type = argparse.FileType('w'), metavar = "<file.fa>", required=True)
+    parser8.add_argument("-g","--genome", help = "Genome build's fasta chromosomes - .fa file or .chromFa folder (required)", type = str, metavar="<file.fa or folder.chromFa>", required=True)
+    parser8.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)",  action = "store_true", default = False)
+
     parser8.set_defaults(func=s8.main)
-
-
-    parser9 = subparsers.add_parser("Seek", help = """Retrieves sequences from chromosome fasta files designated by BED file coordinates""")
-    parser9._optionals.title = "Arguments"
-    parser9.add_argument("-i","--infile", help = """Repeat genomic coordinates, can be TE_ID, bedfile, or gff (required)""", type=argparse.FileType('r'), metavar = "<file.bed>", required=True)
-    parser9.add_argument("-o","--outfile", help = """Repeat sequences output file (FASTA), can use "-" for stdout (required)""", type = argparse.FileType('w'), metavar = "<file.fa>", required=True)
-    parser9.add_argument("-g","--genome", help = "Genome build's fasta chromosomes - .fa file or .chromFa folder (required)", type = str, metavar="<file.fa or folder.chromFa>", required=True)
-    parser9.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)",  action = "store_true", default = False)
-
-    parser9.set_defaults(func=s9.main)
 
 
     ## parse the args and call the specific program
