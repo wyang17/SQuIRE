@@ -33,7 +33,7 @@ setup(
     entry_points={'console_scripts': ['squire = squire.cli:main']},
     classifiers=[
             "Development Status :: 4 - Beta",
-            "License :: OSI Approved :: GPL-3",
+            "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
             "Environment :: Console",
             "Intended Audience :: Science/Research",
             "Natural Language :: English",
