@@ -17,7 +17,6 @@ from collections import defaultdict #for dictionary
 import glob
 import re
 from six import itervalues
-import prepDE
 import call_deseq2
 import call_deseq2_prefilter
 import shutil
