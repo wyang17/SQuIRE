@@ -104,11 +104,8 @@ Quantification
 
 
 Analysis
-1)    [Flag:](#squire-flag)
-                        Assembles mapped reads into transcripts, merges nearby TEs, and flags transcript type
-                        Run in four installments
 
-2)    [Call:](#squire-call)
+1)    [Call:](#squire-call)
                         Compiles and outputs differential expression from multiple alignments
 
 Follow-up
@@ -284,36 +281,6 @@ The following information is included in the file:
 
 ### Analysis Stage ###
 
-#### squire Flag ####
-
-<img align="right" width="150" height="150" src="images/flag.png">
-
-  - Labels TEs as part of pre-mRNA, lncRNA, readthrough or individual TE loci (ITL) transcripts
-  - Outputs Stringtie assembly gtfs and TE transcript coordinates with Flag labels, distance relative to nearest genes and stringtie assembly coordinates
-
-  - **usage** squire Flag [-h] [-a <folder>] [-c <folder>] [-o <folder>] [-s <int>] [-b <build>] [-f <folder>] [-p <int>] [-n <str>] [-v]
-
-| Arguments |   |
-| --- | --- |
-| -h, --help | show this help message and exit |
-| -m, --map_folder | Folder location(s) of outputs from SQuIRE Map.  Optional, default = 'squire_map' |
-| -f, --fetch_folder | Folder location of outputs from SQuIRE Fetch.  Optional, default = 'squire_fetch' |
-| -c, --count_folder | Folder location(s) of outputs from SQuIRE Count.  Optional, default = 'squire_count' |
-| -o, --flag_folder | Destination folder for output files.  Optional, default = 'squire_flag' |
-| -r, --read_length | Read length |
-| -a, --assembly_stage | Which step of transcriptome assembly: 1=initial per sample run; 2=merging all samples (name not required); 3=final per sample run with merged gtf, 4= final quantitation across all samples |
-| -b, --build | UCSC designation for genome build, eg. 'hg37' (required if more than 1 build in fetch_folder) |
-| -s, --strandedness | '0' if unstranded, 1 if first-strand eg Illumina Truseq, dUTP, NSR, NNSR, 2 if second-strand, eg Ligation, Standard. Optional; default = 1) |
-| -p, --pthreads | Launch <int> parallel threads.  Optional, default = 1 |
-| -n, --name | Basename for bam file (required if more than one bam file in map_folder) |
-| -N, --projectname | Basename for project |
-| -t, --tempfolder | Folder for tempfiles. Optional; default = outfolder' |
-| -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False) |
-
-
-<img align="center" width="690" height="320" src="images/flag_figure.png">
-
-
 #### squire Call ####
 
 <img align="right" width="150" height="150" src="images/call.png">
@@ -330,13 +297,12 @@ The following information is included in the file:
   -2,--group2 | List of basenames for group2 (Control) samples, can also provide string pattern common to all group2 basenames
   -A,--condition1 | Name of condition for group1
   -B,--condition2 | Name of condition for group2
-  -f,--flag_folder | Folder location of outputs from SQuIRE Flag (optional, default = 'squire_flag')
-  -c,--call_folder | Destination folder for output files (optional; default='squire_call')
-  -g,--groupby | Group TE counts by 'ITL', 'TE' (includes all TE loci) or 'subfamily'(includes all TE subfamily counts) (optional; default='ITL')
+  -i,--count_folder | Folder location of outputs from SQuIRE Count (optional, default = 'squire_count')
+  -o,--call_folder | Destination folder for output files (optional; default='squire_call')
+  -s,--subfamily | Compare TE counts by subfamily. Otherwise, compares TEs at locus level (optional; default=False)
   -p,--pthreads | Launch <int> parallel threads(optional; default='1')
   -N,--projectname | Basename for project
-  -o,--output_format | Output figures as html or pdf
-  -t,--threshold | Score threshold for ITL inclusion in DESeq2, applies to 'groupby=transcript' only  (optional; default=0)
+  -f,--output_format | Output figures as html or pdf
   -v,--verbosity | Want messages and runtime printed to stderr (optional; default=False)
 
 
@@ -346,9 +312,8 @@ The following information is included in the file:
 
 <img align="right" width="150" height="150" src="images/draw.png">
 
-  - Creates bedGraphs from RNAseq data
-  - Outputs bedgraphs of unique only reads and total (unique + multi-mapped) reads for each strand
-
+  - Creates bedgraphs from RNAseq data
+  
   - **usage** squire Draw [-h] [-m <folder] [-o <folder>] [-n <str>] [-s <int>] [-v]
 
 | Arguments |   |
@@ -356,7 +321,7 @@ The following information is included in the file:
   -h, --help | show this help message and exit
   -f, --fetch_folder | Folder location of outputs from SQuIRE Fetch. Optional, default = 'squire_fetch'
   -m <folder>, --map_folder <folder> | Folder location of outputs from SQuIRE Map. Optional, default = 'squire_map'
-  -o <folder>, --outfolder <folder> | Destination folder for output files. Optional, default = 'squire_draw'
+  -o <folder>, --draw_folder <folder> | Destination folder for output files. Optional, default = 'squire_draw'
   -n <str>, --name <str> | Basename for bam file (required if more than one bam file in map_folder)
   -s <int>, --strandedness <int> | '0' if unstranded, '1' if first-strand (eg Illumina Truseq, dUTP, NSR, NNSR), '2' if second-strand (eg Ligation, Standard).  Optional, default = 0
   -b, --build | UCSC designation for genome build, eg. 'hg38'

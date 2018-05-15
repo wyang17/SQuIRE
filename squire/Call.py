@@ -195,13 +195,13 @@ def main(**kwargs):
     #check if already args is provided, i.e. main() is called from the top level script
     args = kwargs.get('args', None)
     if args is None: ## i.e. standalone script called from command line in normal way
-        parser = argparse.ArgumentParser(description = """Creates differential expression analysis""")
+        parser = argparse.ArgumentParser(description = """Performs differential expression analysis on TEs and genes""")
         parser._optionals.title = "Arguments"
         parser.add_argument("-1","--group1", help = "List of basenames for group1 (Treatment) samples, can also provide string pattern common to all group1 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
         parser.add_argument("-2","--group2", help = "List of basenames for group2 (Control) samples, can also provide string pattern common to all group2 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
         parser.add_argument("-A","--condition1", help = "Name of condition for group1",required = True, type = str, metavar = "<str>")
         parser.add_argument("-B","--condition2", help = "Name of condition for group2",required = True, type = str, metavar = "<str>")
-        parser.add_argument("-i","--count_folder", help = "Folder location of outputs from SQuIRE Flag (optional, default = 'squire_flag')", type = str, metavar = "<folder>",default="squire_flag")
+        parser.add_argument("-i","--count_folder", help = "Folder location of outputs from SQuIRE Count (optional, default = 'squire_count')", type = str, metavar = "<folder>",default="squire_count")
         parser.add_argument("-o","--call_folder", help = "Destination folder for output files (optional; default='squire_call')", type = str, metavar = "<folder>", default="squire_call")
         parser.add_argument("-s","--subfamily", help = "Compare TE counts by subfamily. Otherwise, compares TEs at locus level (optional; default=False)", action = "store_true", default = False)
         parser.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)

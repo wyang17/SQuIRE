@@ -124,13 +124,13 @@ def main():
     # parser6.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
     # parser6.set_defaults(func=s6.main)
 
-    parser7 = subparsers.add_parser("Call",help = """Flags TEs as ITL, lncRNA or [pre-]mRNA transcripts""")
+    parser7 = subparsers.add_parser("Call",help = """Performs differential expression analysis on TEs and genes""")
     parser7._optionals.title = "Arguments"
     parser7.add_argument("-1","--group1", help = "List of basenames for group1 (Treatment) samples, can also provide string pattern common to all group1 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
     parser7.add_argument("-2","--group2", help = "List of basenames for group2 (Control) samples, can also provide string pattern common to all group2 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
     parser7.add_argument("-A","--condition1", help = "Name of condition for group1",required = True, type = str, metavar = "<str>")
     parser7.add_argument("-B","--condition2", help = "Name of condition for group2",required = True, type = str, metavar = "<str>")
-    parser7.add_argument("-i","--count_folder", help = "Folder location of outputs from SQuIRE Flag (optional, default = 'squire_flag')", type = str, metavar = "<folder>",default="squire_flag")
+    parser.add_argument("-i","--count_folder", help = "Folder location of outputs from SQuIRE Count (optional, default = 'squire_count')", type = str, metavar = "<folder>",default="squire_count")
     parser7.add_argument("-o","--call_folder", help = "Destination folder for output files (optional; default='squire_call')", type = str, metavar = "<folder>", default="squire_call")
     parser7.add_argument("-s","--subfamily", help = "Compare TE counts by subfamily. Otherwise, compares TEs at locus level (optional; default=False)", action = "store_true", default = False)
     parser7.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
