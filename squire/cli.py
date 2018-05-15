@@ -7,6 +7,8 @@ import shutil
 import subprocess
 from subprocess import *
 import argparse #module that passes command-line arguments into script
+from pkg_resources import get_distribution
+__version__ = get_distribution("SQuIRE").version
 script_folder=os.path.dirname(os.path.realpath(__file__))
 currentWorkingDirectory = os.getcwd()
 sys.path.append(currentWorkingDirectory)
