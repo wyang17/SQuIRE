@@ -17,7 +17,6 @@ import Fetch as s2
 import Clean as s3
 import Map as s4
 import Count as s5
-import Flag as s6
 import Call as s7
 import Draw as s8
 import Seek as s9
