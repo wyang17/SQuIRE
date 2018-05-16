@@ -75,8 +75,8 @@ def main():
     ## create subparser for Step2, 'Map'
     parser4 = subparsers.add_parser('Map', help='Aligns RNAseq reads to STAR index allowing for multiple alignments')
     parser4._optionals.title = "Arguments"
-    parser4.add_argument("-1","--read1", help = "RNASeq data fastq file; read1 if providing paired end data. If more than one file, separate with commas, no spaces. Can be gzipped. (Required for single-end data; optional for paired-end)", type = str, metavar = "<file_1.fastq or file_1.fastq.gz>")
-    parser4.add_argument("-2","--read2", help = "RNASeq data read2 fastq file. if more than one file, separate with commas, no spaces. Can be gzipped.  (optional, can skip or enter 'False' if data is unpaired)", type = str, metavar = "<file_2.fastq or file_2.fastq.gz>")
+    parser4.add_argument("-1","--read1", help = "RNASeq data fastq file(s); read1 if providing paired end data. If more than one file, separate with commas, no spaces. Can be gzipped.", type = str, metavar = "<file_1.fastq or file_1.fastq.gz>")
+    parser4.add_argument("-2","--read2", help = "RNASeq data read2 fastq file(s). if more than one file, separate with commas, no spaces. Can be gzipped.  (optional, can skip or enter 'False' if data is unpaired)", type = str, metavar = "<file_2.fastq or file_2.fastq.gz>")
     parser4.add_argument("-o","--map_folder", help = "Location of SQuIRE Map outputs (optional, default = 'squire_map')", type = str, metavar = "<folder>", default = "squire_map")
     parser4.add_argument("-f","--fetch_folder", help = "Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch'",type = str, metavar = "<folder>",default="squire_fetch")
     parser4.add_argument("-r","--read_length", help = "Read length (if trim3 selected, after trimming; required).", type = int, metavar = "<int>", required=True)
@@ -97,7 +97,7 @@ def main():
     parser5.add_argument("-c","--clean_folder", help = "Folder location of outputs from SQuIRE Clean (optional, default = 'squire_clean')", type = str, metavar = "<folder>",default = "squire_clean")
     parser5.add_argument("-o","--count_folder", help = "Destination folder for output files(optional, default = 'squire_count')", type = str, metavar = "<folder>", default="squire_count")
     parser5.add_argument("-t","--tempfolder", help = "Folder for tempfiles (optional; default=count_folder')", type = str, metavar = "<folder>", default=False)
-    parser5.add_argument("-f","--fetch_folder", help = "Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch'",type = str, metavar = "<folder>",default="squire_fetch")
+    parser5.add_argument("-f","--fetch_folder", help = "Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch)'",type = str, metavar = "<folder>",default="squire_fetch")
     parser5.add_argument("-r","--read_length", help = "Read length (if trim3 selected, after trimming; required).", type = int, metavar = "<int>", required=True)
     parser5.add_argument("-n","--name", help = "Common basename for input files (required if more than one bam file in map_folder)", type = str, metavar = "<str>",default=False)
     parser5.add_argument("-b","--build", help = "UCSC designation for genome build, eg. 'hg38' (required if more than 1 build in clean_folder)", type=str, metavar = "<build>",default=False)

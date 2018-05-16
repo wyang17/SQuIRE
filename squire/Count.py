@@ -1666,7 +1666,7 @@ def main(**kwargs):
 		parser.add_argument("-c","--clean_folder", help = "Folder location of outputs from SQuIRE Clean (optional, default = 'squire_clean')", type = str, metavar = "<folder>",default = "squire_clean")
 		parser.add_argument("-o","--count_folder", help = "Destination folder for output files(optional, default = 'squire_count')", type = str, metavar = "<folder>", default="squire_count")
 		parser.add_argument("-t","--tempfolder", help = "Folder for tempfiles (optional; default=count_folder')", type = str, metavar = "<folder>", default=False)
-		parser.add_argument("-f","--fetch_folder", help = "Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch'",type = str, metavar = "<folder>",default="squire_fetch")
+		parser.add_argument("-f","--fetch_folder", help = "Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch')",type = str, metavar = "<folder>",default="squire_fetch")
 		parser.add_argument("-r","--read_length", help = "Read length (if trim3 selected, after trimming; required).", type = int, metavar = "<int>", required=True)
 		parser.add_argument("-n","--name", help = "Common basename for input files (required if more than one bam file in map_folder)", type = str, metavar = "<str>",default=False)
 		parser.add_argument("-b","--build", help = "UCSC designation for genome build, eg. 'hg38' (required if more than 1 build in clean_folder)", type=str, metavar = "<build>",default=False)

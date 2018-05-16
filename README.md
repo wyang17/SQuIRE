@@ -126,7 +126,7 @@ Follow-up Stage
 | Arguments: |    |
 | --- | --- |
 |  -b, --folder | Destination folder for downloaded UCSC file(s). Optional; default='squire_build' |
-|  -s <software list or 'all'>, --software | Install required SQuIRE software and add to PATH - specify 'all' or provide comma-separated list (no spaces) of: STAR,bedtools,samtools,stringtie. Optional; default = False |
+|  -s <software>, --software <software> | Install required SQuIRE software and add to PATH - specify 'all' or provide comma-separated list (no spaces) of: STAR,bedtools,samtools,stringtie. Optional; default = False |
 |  -v, --verbosity | Want messages and runtime printed to stderr. Optional. |
 
 
@@ -147,13 +147,13 @@ Follow-up Stage
 | --- | --- |
  -h, --help | show this help message and exit
  -b <build>, --build <build> | UCSC designation for genome build, eg. 'hg38'
- -o <folder>, --fetch_folder | Destination folder for downloaded UCSC file(s), default folder is 'squire_fetch'
+ -o <folder>, --fetch_folder <folder>| Destination folder for downloaded UCSC file(s), default folder is 'squire_fetch'
  -f, --fasta | Download chromosome fasta files for build chromosomes. Optional
  -c, --chrom_info | Download chrom_info.txt file with chromosome lengths. Optional
  -r, --rmsk | Download Repeatmasker file. Optional
  -g, --gene | Download UCSC gene annotation. Optional
  -x, --index | Create STAR index (WARNING: will take a lot of time and memory!), optional
- -p, --pthreads | Launch <int> parallel threads. Optional, default = 1
+ -p <int>, --pthreads <int>| Launch <int> parallel threads. Optional, default = 1
  -k, --keep | Keep downloaded compressed files. Optional, default = False
  -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False
 
@@ -173,13 +173,13 @@ Follow-up Stage
 | Arguments |   |
 | --- | --- |
   -h, --help | show this help message and exit
-  -r, --rmsk | Repeatmasker file, default will search 'squire_fetch' folder for rmsk.txt or .out file. Optional
-  -b, --build | UCSC designation for genome build, eg. 'hg37'
-  -o, --clean_folder | Destination folder for output BED file, default folder is 'squire_clean'
-  -c, --repclass | Comma-separated list of desired repeat classes (AKA superfamilies), eg 'DNA,LTR'. Column 12 in repeatmasker file. Can use UNIX wildcard patterns. Optional
-  -f, --family | Comma-separated list of desired repeat families, eg 'ERV1,ERVK,ERVL'.  Column 13 on repeatmasker file.  Can use UNIX wildcard patterns. Optional
-  -s, --subfamilies | Comma-separated list of desired repeat subfamilies, eg 'L1HS,AluYb'. Column 11 in repeatmasker file. Can use UNIX wildcard patterns. Optional
-  -e, --extra | Filepath of extra tab-delimited file containing non-reference repeat sequences. Columns should be chr, start, stop, strand, subfamily, and sequence.  Optional; default = False
+  -r <file>, --rmsk <file> | Repeatmasker file, default will search 'squire_fetch' folder for rmsk.txt or .out file. Optional
+  -b <str>, --build <str> | UCSC designation for genome build, eg. 'hg37'
+  -o <folder>, --clean_folder <folder>| Destination folder for output BED file, default folder is 'squire_clean'
+  -c <str>, --repclass <str> | Comma-separated list of desired repeat classes (AKA superfamilies), eg 'DNA,LTR'. Column 12 in repeatmasker file. Can use UNIX wildcard patterns.  Optional
+  -f <str>, --family <str> | Comma-separated list of desired repeat families, eg 'ERV1,ERVK,ERVL'.  Column 13 on repeatmasker file.  Can use UNIX wildcard patterns. Optional
+  -s <str>, --subfamily <str>| Comma-separated list of desired repeat subfamilies, eg 'L1HS,AluYb'. Column 11 in repeatmasker file. Can use UNIX wildcard patterns. Optional
+  -e <file>, --extra <file>| Filepath of extra tab-delimited file containing non-reference repeat sequences. Columns should be chr, start, stop, strand, subfamily, and sequence.  Optional; default = False
   -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False
 
 
@@ -196,22 +196,22 @@ Follow-up Stage
    - Outputs .bam file
 
 
-   - **usage:** `squire Map [-h] [-1 <file_1.fastq or file_1.fastq.gz>] [-2 <file_2.fastq or file_2.fastq.gz>] [-o <folder>] -r <int> [-x <index>] [-n <str>] [-3 <int>] [-e <file.txt>] [-g <gtf>] [-p <int>] [-v]`
+   - **usage:** `squire Map [-h] [-1 <file_1.fastq or file_1.fastq.gz>] [-2 <file_2.fastq or file_2.fastq.gz>] [-o <folder>][-f <folder>] -r <int> [-n <str>] [-3 <int>] [-e <file.txt>] [-b <build>] [-p <int>] [-v]`
 
 | Arguments |    |
 | --- | --- |
   -h, --help | show this help message and exit
-  -1, --read1 | RNASeq data .fastq file; read1 if providing paired end data. Can be gzipped. Required for single-end data, optional for paired-end
-  -2, --read2 | RNASeq data read2 .fastq file Can be gzipped. Optional unless no read1 provided
-  -o, --map_folder <folder> | Destination folder for output files. Optional, default = 'squire_map'
-  -r, --read_length | Read length (if trim3 selected, after trimming; required)
-  -x, --index | Genome STAR index folder. Optional; will search for squire_fetch by default
-  -n, --name | Common basename for input files. Optional, default = read1
-  -3, --trim3 | Trim <int> bases from right end of each read before alignment. Optional; default = 0
-  -e, --extra | Filepath of text file containing non-reference repeat sequence and genome information. Optional, default = False
-  -g, --gtf | Optional GTF of genome transcripts.  For those interested in gene transcription
-  -m, --mask | Separate reads from bamfile that map to plasmid or transgene into another file. Optional; default = False
-  -p, --pthreads | Launch <int> parallel threads. Optional, default = '1'
+  -1 <file>, --read1 <file> | RNASeq data fastq file(s); read1 if providing paired end data. If more than one file, separate with commas, no spaces. Can be gzipped.
+  -2 <file>, --read2 <file> | RNASeq data read2 fastq file(s). if more than one file, separate with commas, no spaces. Can be gzipped. Optional if unpaired data.
+  -o <folder> , --map_folder <folder> | Destination folder for output files. Optional, default = 'squire_map'
+  -f <folder> ,--fetch_folder <folder>  | Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch'
+  -r <int>, --read_length <int>| Read length (if trim3 selected, after trimming; required)  
+  -n <str>, --name <str> | Common basename for RNAseq input. Optional, default = basename of read1
+  -b <str>,--build <str>, UCSC designation for genome build, eg. 'hg38' (required if more than 1 build in clean_folder) 
+  -3 <int>, --trim3 <int> | Trim <int> bases from right end of each read before alignment. Optional; default = 0
+  -e <file>, --extra <file> | Filepath of text file containing non-reference repeat sequence and genome information. Optional, default = False
+  -g <file>, --gtf <file> | Optional GTF of genome transcripts.  For those interested in gene transcription
+  -p <int>, --pthreads <int>| Launch <int> parallel threads. Optional, default = '1'
   -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False
 
 ##### Extra File Format #####
@@ -249,23 +249,28 @@ The following information is included in the file:
 
 <img align="right" width="150" height="150" src="images/count.png">
 
-  - Quantifies RNAseq reads aligning to TEs.
-  - Outputs TE count file and subfamily count file
+  - Quantifies RNAseq reads aligning to TEs and genes
+  - Outputs counts for RefSeq genes and TEs at the locus and subfamily levels
 
-  - **usage:** `squire Count [-h] [-m <folder>] [-c <folder>] [-o <folder>] [-t <folder>] [-n <str>] [-b <build>] [-s <file>] [-e EM] [-v]`
+  - **usage:** `squire Count [-h] [-m <folder>] [-c <folder>] [-o <folder>] [-t <folder>] [-f <folder>] -r <int> [-n <str>] [-b <build>] [-p <int>] [-s <int>] [-e EM] [-v]
+`
 
 | Arguments: |    |
 | --- | --- |
-  -h, --help | show this help message and exit
-  -m, --map_folder <folder> | Folder location of outputs from SQuIRE Map. Optional, default = 'squire_map'
-  -c, --clean_folder | Folder location of outputs from SQuIRE Clean. Optional, default = 'squire_clean'
-  -o, --count_folder | Destination folder for output files.  Optional, default = 'squire_count'
-  -t, --tempfolder | Folder for tempfiles.  Optional, default = 'outfolder'
-  -n, --name | Common basename for input files. Required if more than one bam file in map_folder
-  -b, --build | UCSC designation for genome build, eg 'hg38'. Required if more than one bam file in map_folder
-  -s, --strandedness | '0' if unstranded, '1' if first-strand (eg Illumina Truseq, dUTP, NSR, NNSR), '2' if second-strand (eg Ligation, Standard).  Optional, default = 0
-  -e EM, --EM EM | Run estimation-maximization on TE counts given number of times. Optional, default = False
-  -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False
+ -h, --help        |    show this help message and exit
+  -m <folder>, --map_folder <folder> | Folder location of outputs from SQuIRE Map (optional,default = 'squire_map')
+  -c <folder>, --clean_folder <folder>|Folder location of outputs from SQuIRE Clean (optional, default = 'squire_clean')
+  -o <folder>, --count_folder <folder>|Destination folder for output files(optional, default = 'squire_count')
+  -t <folder>, --tempfolder <folder>|Folder for tempfiles (optional; default=count_folder')
+  -f <folder>, --fetch_folder <folder>|Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch')
+  -r <int>, --read_length <int>|Read length (if trim3 selected, after trimming; required).
+  -n <str>, --name <str>|Common basename for input files (required if more than one bam file in map_folder)
+  -b <build>, --build <build>|UCSC designation for genome build, eg. 'hg38' (required if more than 1 build in clean_folder)
+  -p <int>, --pthreads <int>|Launch <int> parallel threads(optional; default='1')
+  -s <int>, --strandedness <int>|'0' if unstranded eg Standard Illumina, 1 if first- strand eg Illumina Truseq, dUTP, NSR, NNSR, 2 if second-strand, eg Ligation, Standard SOLiD (optional,default=0)
+  -e <EM>, --EM <EM> | Run estimation-maximization on TE counts given numberof times (optional, specify 0 if no EM desired; default=auto)
+  -v, --verbosity|Want messages and runtime printed to stderr (optional; default=False)
+
 
 <img align="center" width="825" height="600" src="images/Count_overview.png">
 
@@ -277,24 +282,26 @@ The following information is included in the file:
 <img align="right" width="150" height="150" src="images/call.png">
 
 
-  - Compiles and outputs differential expression from multiple alignments
-  - Outputs count table, column data, DESeq2 results table, and graphs
+  - Performs differential expression analysis on TEs and genes
+  - Outputs DEseq2 output and plots
 
-  - **usage** squire Call
+  - **usage** squire Call [-h] -1 <str1,str2> or <*str*> -2 <str1,str2> or <*str*> -A  <str> -B <str> [-o <folder>] [-s] [-p <int>] [-N <str>] [-f <str>] [-v]
+
 
   | Arguments |   |
   | --- | --- |
-  -1,--group1 | List of basenames for group1 (Treatment) samples, can also provide string pattern common to all group1 basenames
-  -2,--group2 | List of basenames for group2 (Control) samples, can also provide string pattern common to all group2 basenames
-  -A,--condition1 | Name of condition for group1
-  -B,--condition2 | Name of condition for group2
-  -i,--count_folder | Folder location of outputs from SQuIRE Count (optional, default = 'squire_count')
-  -o,--call_folder | Destination folder for output files (optional; default='squire_call')
-  -s,--subfamily | Compare TE counts by subfamily. Otherwise, compares TEs at locus level (optional; default=False)
-  -p,--pthreads | Launch <int> parallel threads(optional; default='1')
-  -N,--projectname | Basename for project
-  -f,--output_format | Output figures as html or pdf
-  -v,--verbosity | Want messages and runtime printed to stderr (optional; default=False)
+  -h, --help|show this help message and exit
+  -1 <str1,str2> or <*str*>, --group1 <str1,str2> or <*str*>|List of basenames for group1 (Treatment) samples, can also provide string pattern common to all group1 basenames
+  -2 <str1,str2> or <*str*>, --group2 <str1,str2> or <*str*>|List of basenames for group2 (Control) samples, can also provide string pattern common to all group2 basenames
+  -A <str>, --condition1 <str>| Name of condition for group1
+  -B <str>, --condition2 <str>|Name of condition for group2
+  -o <folder>, --call_folder <folder>|Destination folder for output files (optional; default='squire_call')
+  -s, --subfamily|Compare TE counts by subfamily. Otherwise, compares TEs at locus level (optional; default=False)
+  -p <int>, --pthreads <int>|Launch <int> parallel threads(optional; default='1')
+  -N <str>, --projectname <str>| Basename for project
+  -f <str>, --output_format <str>|Output figures as html or pdf
+  -v, --verbosity|Want messages and runtime printed to stderr (optional; default=False)
+
 
 
 ### Follow-up Stage ###
@@ -303,22 +310,24 @@ The following information is included in the file:
 
 <img align="right" width="150" height="150" src="images/draw.png">
 
-  - Creates bedgraphs from RNAseq data
+  - Creates bedgraphs and bigwigs from RNAseq data
   
-  - **usage** squire Draw [-h] [-m <folder] [-o <folder>] [-n <str>] [-s <int>] [-v]
+  - **usage** squire Draw [-h] [-f <folder>] [-m <folder>] [-o <folder>] [-n <str>] [-s <int>] -b <build> [-l] [-p <int>] [-v]
+
 
 | Arguments |   |
 | --- | --- |
-  -h, --help | show this help message and exit
-  -f, --fetch_folder | Folder location of outputs from SQuIRE Fetch. Optional, default = 'squire_fetch'
-  -m <folder>, --map_folder <folder> | Folder location of outputs from SQuIRE Map. Optional, default = 'squire_map'
-  -o <folder>, --draw_folder <folder> | Destination folder for output files. Optional, default = 'squire_draw'
-  -n <str>, --name <str> | Basename for bam file (required if more than one bam file in map_folder)
-  -s <int>, --strandedness <int> | '0' if unstranded, '1' if first-strand (eg Illumina Truseq, dUTP, NSR, NNSR), '2' if second-strand (eg Ligation, Standard).  Optional, default = 0
-  -b, --build | UCSC designation for genome build, eg. 'hg38'
-  -l, --normlib | Normalize bedgraphs by library size. Optional, default = False
-  -p, --pthreads | Launch <int> parallel threads. Optional, default = 1
-  -v, --verbosity | Print messages and runtime records to stderr (optional; default=False)
+  -h, --help |show this help message and exit
+  -f <folder>, --fetch_folder <folder>|Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch')
+  -m <folder>, --map_folder <folder>|Folder location of outputs from SQuIRE Map (optional, default = 'squire_map')
+  -o <folder>, --draw_folder <folder>|Destination folder for output files (optional; default='squire_draw')
+  -n <str>, --name <str>|Basename for bam file (required if more than one bam file in map_folder)
+  -s <int>, --strandedness <int>|'0' if unstranded, 1 if first-strand eg Illumina Truseq, dUTP, NSR, NNSR, 2 if second-strand, eg Ligation, Standard (optional,default=1)
+  -b <build>, --build <build>|UCSC designation for genome build, eg. 'hg38' (required)
+  -l, --normlib|Normalize bedgraphs by library size (optional; default=False)
+  -p <int>, --pthreads <int>|Launch <int> parallel threads(optional; default='1')
+  -v, --verbosity|Want messages and runtime printed to stderr (optional; default=False)
+
 
 
 
@@ -332,7 +341,8 @@ The following information is included in the file:
   - Retrieves transposable element sequences from chromosome fasta files
   - Outputs sequences in FASTA format
 
-  - **usage** squire Seek
+  - **usage**  squire Seek [-h] -i <file.bed> -o <file.fa> -g <file.fa or folder.chromFa> [-v]
+
 
 | Arguments |   |
 | --- | --- |
