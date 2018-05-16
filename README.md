@@ -2,7 +2,7 @@
 
 <img align="right" width="260" height="260" src="images/squire.png">
 
-**Software for Quantifying Individual Repeat Expression** is a tool for finding and analyzing unique repeat regions within a family of repeats.
+**Software for Quantifying Interspersed Repeat Elements** is a tool for finding and analyzing unique repeat regions within a family of repeats.
 
 [Installation](#installation)
 
