@@ -423,11 +423,6 @@ def main(**kwargs):
         refGene_Bed=outfolder + "/" + build + "_refGene.bed"
         gtf_to_bed(refGene_gtf,refGene_Bed)
 
-        sort_commandlist = ["sort","-k1,1", "-k2,2n", refGene_temp2, ">", refGene_Bed]
-        sort_command = " ".join(sort_commandlist)
-        sp.check_call(["/bin/sh", "-c", sort_command])
-
-
         if verbosity:
             print("Finished converting RefGene file to Bed ..." + "\n", file = sys.stderr)
 
