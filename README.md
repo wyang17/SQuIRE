@@ -73,23 +73,11 @@ _*If installing these software with conda is unsuccessful, we recommend installi
 
 
 
-## Pipeline ##
-
-#### Inputs ####
-The pipeline requires the following inputs:
-- BEDfile of Transposable Elements of interest
-- STAR index of genome build of interest
-
-If you have trouble obtaining these items on your own, you can use the steps fetch_ to download the chromosome fasta files, Repeatmasker file and create a STAR index with your transposable elements of interest.
-
-
-
-
 #### Pipeline Steps ####
 
 <img align="center" width="825" height="600" src="images/overview_squire.png">
 
-Preparation
+Preparation Stage
 1)    [Fetch:](#squire-fetch)
                         Downloads input files from RefGene and generates STAR index
                         Only needs to be done once initially to acquire genomic input files or if a new build is desired.
@@ -97,7 +85,7 @@ Preparation
 2)    [Clean:](#squire-clean)
                         Filters Repeatmasker file for Repeats of interest, collapses overlapping repeats, and returns as BED file.
 
-Quantification
+Quantification Stage
 
 1)    [Map:](#squire-map)
                         Aligns RNAseq data
@@ -106,12 +94,12 @@ Quantification
                         Quantifies RNAseq reads aligning to TEs
 
 
-Analysis
+Analysis Stage
 
 1)    [Call:](#squire-call)
                         Compiles and outputs differential expression from multiple alignments
 
-Follow-up
+Follow-up Stage
 1)    [Draw:](#squire-draw)
                         Creates BEDgraphs from RNAseq data
 
