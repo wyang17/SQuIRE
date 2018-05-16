@@ -23,7 +23,7 @@ setup(
     author='Wan Rou Yang',
     author_email='wyang17@jhmi.edu',
     url='https://github.com/wyang17/SQuIRE',
-    description='SQuIRE: Software for Quantifying Interspersed Repetitive Elements',
+    description='SQuIRE: Software for Quantifying Interspersed Repetitive Expression',
     long_description=open('README.md').read(),
     license='GPL-3',
     packages=find_packages(),    
