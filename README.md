@@ -1,8 +1,8 @@
-# SQuIRE Pipeline #
+# Software for Quantifying Interspersed Repeat Elements #
 
 <img align="right" width="260" height="260" src="images/squire.png">
 
-**Software for Quantifying Interspersed Repeat Elements** is a tool for finding and analyzing unique repeat regions within a family of repeats.
+**SQuIRE** is a tool for finding and analyzing unique repeat regions within a family of repeats.
 
 [Installation](#installation)
 
