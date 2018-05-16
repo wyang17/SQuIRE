@@ -1,4 +1,4 @@
-# Software for Quantifying Interspersed Repeat Elements #
+# Software for Quantifying Interspersed Repeat Expression #
 
 <img align="right" width="260" height="260" src="images/squire.png">
 
@@ -63,6 +63,9 @@ SQuIRE was written and tested with the following specific versions of software:
 * `bedtools 2.25.0`
 * `samtools 1.8`
 * `stringtie 1.3.3b`
+* `DESeq2 1.16.1`
+* `R 3.4.1`
+* `Python 2.7.9`
 
 _*If installing these software with conda is unsuccessful, we recommend installing these versions with squire Build to ensure compatibility with SQuIRE.*_
   * [squire Build:](#squire-build)
