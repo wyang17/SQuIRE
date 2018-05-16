@@ -91,7 +91,7 @@ def main():
     parser4.set_defaults(func=s4.main)
 
     ## create subparser for Step3, 'Count'
-    parser5 = subparsers.add_parser('Count', help = "Quantifies RNAseq reads aligning to TEs. Outputs TE count file and subfamily count file")
+    parser5 = subparsers.add_parser('Count', help = "Quantifies RNAseq reads aligning to TEs and genes")
     parser5._optionals.title = "Arguments"
     parser5.add_argument("-m","--map_folder", help = "Folder location of outputs from SQuIRE Map (optional, default = 'squire_map')", type = str, metavar = "<folder>",default="squire_map")
     parser5.add_argument("-c","--clean_folder", help = "Folder location of outputs from SQuIRE Clean (optional, default = 'squire_clean')", type = str, metavar = "<folder>",default = "squire_clean")
@@ -125,7 +125,7 @@ def main():
 
     parser6.set_defaults(func=s6.main)
 
-    parser7 = subparsers.add_parser('Draw', help  = """Makes unique and multi bedgraph files""")
+    parser7 = subparsers.add_parser('Draw', help  = """Makes bedgraphs and bedwigs from RNAseq data""")
     parser7._optionals.title = "Arguments"
     parser7.add_argument("-f","--fetch_folder", help = "Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch')",type = str, metavar = "<folder>",default="squire_fetch")
     parser7.add_argument("-m","--map_folder", help = "Folder location of outputs from SQuIRE Map (optional, default = 'squire_map')", type = str, metavar = "<folder>", default="squire_map")

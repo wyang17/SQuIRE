@@ -421,7 +421,7 @@ def main(**kwargs):
         if verbosity:
             print("Converting RefGene file to Bed ..." + "\n", file = sys.stderr)
         refGene_Bed=outfolder + "/" + build + "_refGene.bed"
-        gtf_to_bed(refGenegtf,refGene_Bed)
+        gtf_to_bed(refGene_gtf,refGene_Bed)
 
         sort_commandlist = ["sort","-k1,1", "-k2,2n", refGene_temp2, ">", refGene_Bed]
         sort_command = " ".join(sort_commandlist)
