@@ -63,10 +63,7 @@ def gtf_to_bed(gtf,bed):
     #convert genepred to bed
     genepredtobedcommand_list = ["genePredToBed ",genepred,bed] 
     genepredtobedcommand=" ".join(genepredtobedcommand_list)
-    sp.check_call(["/bin/sh", "-c", genepredtobedcommand])     
-
-    if not debug:
-        os.unlink(genepred)  
+    sp.check_call(["/bin/sh", "-c", genepredtobedcommand])    
 
 
 def make_tempfile(step, outfolder):
@@ -109,18 +106,6 @@ def get_basename(filepath):
         filename = os.path.basename(filepath)
         filebase = os.path.splitext(filename)[0]
         return filebase
-
-def gtf_to_bed(gtf,bed):    
-    #convert gtf to genepred
-    genepred=gtf.replace("gtf","genepred")
-    gtftogenepredcommand_list = ["gtfToGenePred",gtf,genepred] 
-    gtftogenepredcommand=" ".join(gtftogenepredcommand_list)
-    sp.check_call(["/bin/sh", "-c", gtftogenepredcommand]) 
-    #convert genepred to bed
-    genepredtobedcommand_list = ["genePredToBed ",genepred,bed] 
-    genepredtobedcommand=" ".join(genepredtobedcommand_list)
-    sp.check_call(["/bin/sh", "-c", genepredtobedcommand])     
-    os.unlink(genepred)  
 
 
 def get_script_path():

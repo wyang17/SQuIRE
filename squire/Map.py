@@ -133,7 +133,7 @@ def align_paired(fastq1,fastq2,pthreads,trim3,index,outfile,gtf,gzip,prefix,read
 
         STAR_output = prefix + "Aligned.out.bam"
 
-        sortcommand_list = ["samtools", "sort", "-@",str(pthreads),"-o",outfile, STAR_output]
+        sortcommand_list = ["samtools", "sort", "-@",str(pthreads), STAR_output, prefix]
         sortcommand = " ".join(sortcommand_list)
         sp.check_call(["/bin/sh", "-c", sortcommand])
 
@@ -256,7 +256,6 @@ def main(**kwargs):
         parser.add_argument("-3","--trim3", help = "Trim <int> bases from right end of each read before alignment (optional; default=0).", type = int, default = 0, metavar = "<int>")
         parser.add_argument("-e","--extra", help = "Filepath of text file containing non-reference repeat sequence and genome information", type=str, metavar = "<file.txt>")
         parser.add_argument("-b","--build", help = "UCSC designation for genome build, eg. 'hg38' (required if more than 1 build in clean_folder)", type=str, metavar = "<build>",default=False)
-        # parser.add_argument("-m","--mask", help = "Separate reads from bamfile that map to plasmid or transgene into another file (optional; default=False)", action = "store_true", default = False)
         parser.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
         parser.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
         args,extra_args = parser.parse_known_args()
@@ -371,13 +370,17 @@ def main(**kwargs):
     else:
         extra_fa=None
     if read1 and not read2: #if single-end
-
+        if read1.endswith(","):
+            read1=read1[:-1]
         if verbosity:
             print("Aligning FastQ files " + str(datetime.now()) + "\n",file = sys.stderr)
         align_unpaired(read1,pthreads,trim3,index,outfile,gtf,gzip,prefix, read_length,extra_fapath)
 
     if read1 and read2:
-
+        if read1.endswith(","):
+            read1=read1[:-1]
+        if read2.endswith(","):
+            read2=read2[:-1]            
         if verbosity:
             print("Aligning FastQ files for Read1 and Read2 " + str(datetime.now()) + "\n",file = sys.stderr)
         align_paired(read1,read2,pthreads,trim3,index,outfile,gtf,gzip,prefix, read_length,extra_fapath)
