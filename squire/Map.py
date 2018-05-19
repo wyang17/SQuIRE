@@ -175,7 +175,7 @@ def align_unpaired(fastq,pthreads,trim3,index,outfile,gtf,gzip,prefix,read_lengt
         sp.check_call(["/bin/sh", "-c", STARcommand])
         STAR_output = prefix + "Aligned.out.bam"
 
-        sortcommand_list = ["samtools", "sort","-@",str(pthreads),"-o",outfile, STAR_output]
+        sortcommand_list = ["samtools", "sort", "-@",str(pthreads), STAR_output, prefix]
         sortcommand = " ".join(sortcommand_list)
         sp.check_call(["/bin/sh", "-c", sortcommand])
 
