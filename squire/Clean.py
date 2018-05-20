@@ -73,6 +73,30 @@ def split_subF(subF):
         return [subF]
 
 
+def find_file(folder,pattern,base, wildpos, needed):
+    foundfile=False
+    if wildpos == 1:
+        file_list=glob.glob(folder + "/" + "*" + pattern)
+    elif wildpos ==2:
+        file_list=glob.glob(folder + "/" + pattern + "*")
+    if len(file_list)>1: #if more than one file in folder
+        if not base:
+            raise Exception("More than 1 " + pattern + " file")
+        for i in file_list:
+            if base in i:
+                foundfile = i        
+    elif len(file_list) == 0:
+        foundfile = False  
+    else:
+        foundfile = file_list[0]
+    if not foundfile:
+        if needed:
+            raise Exception("No " + pattern + " file")
+        else:
+            foundfile = False             
+    return foundfile
+
+
 def main(**kwargs):
 
 
@@ -84,6 +108,7 @@ def main(**kwargs):
         parser._optionals.title = "Arguments"
         parser.add_argument("-r","--rmsk", help = "Repeatmasker file (optional; will search 'squire_fetch' folder for rmsk.txt or .out file by default)", type=str, metavar = "<rmsk.txt or file.out>")
         parser.add_argument("-b","--build", help = "UCSC designation for genome build, eg. 'hg38' (optional; will be basename of rmsk.txt file by default)", type=str, metavar = "<build>")
+        parser.add_argument("-i","--fetch_folder", help = "Destination folder for downloaded UCSC file(s) (optional; default='squire_fetch')", type=str, default="squire_fetch", metavar = "<folder>")
         parser.add_argument("-o","--clean_folder", help = "Destination folder for output BED file (optional; default = 'squire_clean')", type=str, default = "squire_clean", metavar = "<folder>")
         parser.add_argument("-c","--repclass", help = "Comma-separated list of desired repeat class/classes, aka superfamily, eg DNA, LTR. Column 12 in repeatmasker file. Can use UNIX wildcard patterns. (optional; default=False)", type=str, metavar = "<classes>")
         parser.add_argument("-f","--family", help = "Comma-separated list of desired repeat family/families, eg 'ERV1,ERVK,ERVL. Column 13 in repeatmasker file. Can use UNIX wildcard patterns.  (optional; default=False)", type=str, metavar = "<families>")
@@ -96,6 +121,7 @@ def main(**kwargs):
     ### DEFINE ARGUMENTS ####
     rmsk = args.rmsk
     build = args.build
+    fetch_folder=args.fetch_folder
     outfolder = args.clean_folder
     repclass = args.repclass
     family = args.family
@@ -107,18 +133,8 @@ def main(**kwargs):
     RM_out = False
     print_unique=True
     if not rmsk:  #if infile not given, find *rmsk.txt file in squire_fetch folder and open as infile
-        if not os.path.isdir("squire_fetch"):
-            raise Exception("squire_fetch folder does not exist, please provide repeatmasker file")
-        rmsk_list = glob.glob("squire_fetch/*rmsk.txt")
-        if len(rmsk_list)>1: #if more than one .bed file in squire_fetch folder
-            raise Exception("More than one .bed file in squire_fetch; please give specific infile")
-        elif len(rmsk_list)==0:
-            rmsk_list = glob.glob("squire_fetch/*.out")
-            if len(rmsk_list)==1:
-                rmsk = rmsk_list[0]
-                RM_out = True
-        else:
-            rmsk = rmsk_list[0]
+        rmsk=find_file(fetch_folder,"_rmsk.txt",build,1,True)
+
     elif ".out" in os.path.basename(rmsk):
         RM_out = True
 
@@ -267,7 +283,7 @@ def main(**kwargs):
     subfamily_countdict = defaultdict(int)
     subfamily_length=defaultdict(int)
 
-    with open(rmsk) as infile:
+    with open(rmsk, 'r') as infile:
         if verbosity:
             if repclass or family or subfamily or get_all:
                 print("Adding repeatmasker repeats to BED file" + str(datetime.now()) + "\n", file = sys.stderr)

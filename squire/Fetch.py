@@ -65,6 +65,42 @@ def gtf_to_bed(gtf,bed):
     genepredtobedcommand=" ".join(genepredtobedcommand_list)
     sp.check_call(["/bin/sh", "-c", genepredtobedcommand])    
 
+def genepred_to_bed(genepred,bed,outfolder): 
+    refGene_temp=make_tempfile("refGenebed",outfolder)   
+    #convert genepred to bed
+    genepredtobedcommand_list = ["genePredToBed ",genepred,refGene_temp] 
+    genepredtobedcommand=" ".join(genepredtobedcommand_list)
+    sp.check_call(["/bin/sh", "-c", genepredtobedcommand])    
+
+    sort_commandlist = ["sort","-k1,1", "-k2,2n",genepred,refGene_temp, ">", bed]
+    sort_command = " ".join(sort_commandlist)
+    sp.check_call(["/bin/sh", "-c", sort_command])
+
+    os.unlink(refGene_temp)
+
+def genepred_to_gtf(genepred,gtf,outfolder):        
+    refGene_temp=make_tempfile("refGene",outfolder)
+    refGene_temp2=make_tempfile("refGene2",outfolder)
+    refGene_temp3=make_tempfile("refGene3",outfolder)
+
+    genePredToGtf_commandlist = ["genePredToGtf","file",genepred,refGene_temp]
+    genePredToGtf_command = " ".join(genePredToGtf_commandlist)
+    sp.check_call(["/bin/sh", "-c", genePredToGtf_command])
+
+    replace_command_list = ["awk","-v", "OFS='\\t'", """'{ gsub("stdin","hg38_refGene",$2); print $0 }'""", refGene_temp, ">", refGene_temp2]
+    replace_command = " ".join(replace_command_list)
+    sp.check_call(["/bin/sh","-c",replace_command])
+
+    sort_commandlist = ["sort","-k1,1", "-k4,4n", refGene_temp2, ">", refGene_temp3]
+    sort_command = " ".join(sort_commandlist)
+    sp.check_call(["/bin/sh", "-c", sort_command])
+
+    fix_gtf(refGene_temp3, gtf)
+
+    os.remove(refGene_temp)
+    os.remove(refGene_temp2)
+    os.remove(refGene_temp3)
+
 
 def make_tempfile(step, outfolder):
     tmpfile = tempfile.NamedTemporaryFile(delete=False, dir = outfolder, prefix= step +  ".tmp")
@@ -371,42 +407,25 @@ def main(**kwargs):
                print("Deleting Compressed refGene file" + "\n", file=sys.stderr)
             os.remove(refGene_name_compressed)
 
+        #remove first column
+        refGene_genepred=outfolder + "/" + build + "_refGene.genepred"        
+        removecolumn_commandlist = ["cut","-f2-",refGene_name,">",refGene_genepred]
+        removecolumn_command = " ".join(removecolumn_commandlist)
+        sp.check_call(["/bin/sh", "-c", removecolumn_command])    
+        os.unlink(refGene_name)
 
         if verbosity:
             print("Converting RefGene file to GTF ..." + "\n", file = sys.stderr)
         refGene_gtf=outfolder + "/" + build + "_refGene.gtf"
-        refGene_temp=make_tempfile("refGene",outfolder)
-        refGene_temp2=make_tempfile("refGene2",outfolder)
-        refGene_temp3=make_tempfile("refGene3",outfolder)
-
-        genePredToGtf_commandlist = ["cut","-f2-",refGene_name,"|","genePredToGtf","file","stdin",refGene_temp]
-        genePredToGtf_command = " ".join(genePredToGtf_commandlist)
-        sp.check_call(["/bin/sh", "-c", genePredToGtf_command])
-
-        replace_command_list = ["awk","-v", "OFS='\\t'", """'{ gsub("stdin","hg38_refGene",$2); print $0 }'""", refGene_temp, ">", refGene_temp2]
-        replace_command = " ".join(replace_command_list)
-        sp.check_call(["/bin/sh","-c",replace_command])
-
-        sort_commandlist = ["sort","-k1,1", "-k4,4n", refGene_temp2, ">", refGene_temp3]
-        sort_command = " ".join(sort_commandlist)
-        sp.check_call(["/bin/sh", "-c", sort_command])
-
-        fix_gtf(refGene_temp3, refGene_gtf)
-
-        os.remove(refGene_temp)
-        os.remove(refGene_temp2)
-        os.remove(refGene_temp3)
-
+        genepred_to_gtf(refGene_genepred,refGene_gtf,outfolder)
 
         if verbosity:
             print("Finished converting RefGene file to GTF ..." + "\n", file = sys.stderr)
 
         if verbosity:
-            print("Finished downloading genePredToBed ..." + "\n", file = sys.stderr)
-        if verbosity:
             print("Converting RefGene file to Bed ..." + "\n", file = sys.stderr)
         refGene_Bed=outfolder + "/" + build + "_refGene.bed"
-        gtf_to_bed(refGene_gtf,refGene_Bed)
+        genepred_to_bed(refGene_genepred,refGene_Bed,outfolder)
 
         if verbosity:
             print("Finished converting RefGene file to Bed ..." + "\n", file = sys.stderr)
