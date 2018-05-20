@@ -84,16 +84,16 @@ def find_file(folder,pattern,base, wildpos, needed):
             raise Exception("More than 1 " + pattern + " file")
         for i in file_list:
             if base in i:
-                foundfile = i
-        if not foundfile:
-            if needed:
-                raise Exception("No " + pattern + " file")
-            else:
-                foundfile = False
+                foundfile = i        
     elif len(file_list) == 0:
-        foundfile = False
+        foundfile = False  
     else:
         foundfile = file_list[0]
+    if not foundfile:
+        if needed:
+            raise Exception("No " + pattern + " file")
+        else:
+            foundfile = False             
     return foundfile
 
 
@@ -134,6 +134,7 @@ def main(**kwargs):
     print_unique=True
     if not rmsk:  #if infile not given, find *rmsk.txt file in squire_fetch folder and open as infile
         rmsk=find_file(fetch_folder,"_rmsk.txt",build,1,True)
+
     elif ".out" in os.path.basename(rmsk):
         RM_out = True
 
@@ -282,7 +283,7 @@ def main(**kwargs):
     subfamily_countdict = defaultdict(int)
     subfamily_length=defaultdict(int)
 
-    with open(rmsk) as infile:
+    with open(rmsk, 'r') as infile:
         if verbosity:
             if repclass or family or subfamily or get_all:
                 print("Adding repeatmasker repeats to BED file" + str(datetime.now()) + "\n", file = sys.stderr)
