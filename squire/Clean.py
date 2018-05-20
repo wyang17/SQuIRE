@@ -131,7 +131,7 @@ def main(**kwargs):
     RM_out = False
     print_unique=True
     if not rmsk:  #if infile not given, find *rmsk.txt file in squire_fetch folder and open as infile
-        rmsk=find_file(clean_folder,".bed",build,1,True)
+        rmsk=find_file(fetch_folder,"_rmsk.txt",build,1,True)
     elif ".out" in os.path.basename(rmsk):
         RM_out = True
 
