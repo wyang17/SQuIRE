@@ -63,6 +63,7 @@ def main():
     parser3._optionals.title = "Arguments"
     parser3.add_argument("-r","--rmsk", help = "Repeatmasker file (optional; will search 'squire_fetch' folder for rmsk.txt or .out file by default)", type=str, metavar = "<rmsk.txt or file.out>")
     parser3.add_argument("-b","--build", help = "UCSC designation for genome build, eg. 'hg37' (optional; will be basename of rmsk.txt file by default)", type=str, metavar = "<build>")
+    parser3.add_argument("-i","--fetch_folder", help = "Destination folder for downloaded UCSC file(s) (optional; default='squire_fetch')", type=str, default="squire_fetch", metavar = "<folder>")
     parser3.add_argument("-o","--clean_folder", help = "Destination folder for output BED file (optional; default = 'squire_clean')", type=str, default = "squire_clean", metavar = "<folder>")
     parser3.add_argument("-c","--repclass", help = "Comma-separated list of desired repeat class/classes, aka superfamily, eg DNA, LTR. Column 12 in repeatmasker file. Can use UNIX wildcard patterns. (optional; default=False)", type=str, metavar = "<classes>")
     parser3.add_argument("-f","--family", help = "Comma-separated list of desired repeat family/families, eg 'ERV1,ERVK,ERVL. Column 13 in repeatmasker file. Can use UNIX wildcard patterns.  (optional; default=False)", type=str, metavar = "<subfamilies>")
