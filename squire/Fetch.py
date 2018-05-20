@@ -65,7 +65,7 @@ def gtf_to_bed(gtf,bed):
     genepredtobedcommand=" ".join(genepredtobedcommand_list)
     sp.check_call(["/bin/sh", "-c", genepredtobedcommand])    
 
-def genepred_to_bed(genepred,bed): 
+def genepred_to_bed(genepred,bed,outfolder): 
     refGene_temp=make_tempfile("refGenebed",outfolder)   
     #convert genepred to bed
     genepredtobedcommand_list = ["genePredToBed ",genepred,refGene_temp] 
@@ -78,7 +78,7 @@ def genepred_to_bed(genepred,bed):
 
     os.unlink(refGene_temp)
 
-def genepred_to_gtf(genepred,gtf):        
+def genepred_to_gtf(genepred,gtf,outfolder):        
     refGene_temp=make_tempfile("refGene",outfolder)
     refGene_temp2=make_tempfile("refGene2",outfolder)
     refGene_temp3=make_tempfile("refGene3",outfolder)
@@ -413,11 +413,11 @@ def main(**kwargs):
         removecolumn_command = " ".join(removecolumn_commandlist)
         sp.check_call(["/bin/sh", "-c", removecolumn_command])    
         os.unlink(refGene_name)
-        
+
         if verbosity:
             print("Converting RefGene file to GTF ..." + "\n", file = sys.stderr)
         refGene_gtf=outfolder + "/" + build + "_refGene.gtf"
-        genepred_to_gtf(refGene_genepred,refGene_gtf)
+        genepred_to_gtf(refGene_genepred,refGene_gtf,outfolder)
 
         if verbosity:
             print("Finished converting RefGene file to GTF ..." + "\n", file = sys.stderr)
@@ -425,7 +425,7 @@ def main(**kwargs):
         if verbosity:
             print("Converting RefGene file to Bed ..." + "\n", file = sys.stderr)
         refGene_Bed=outfolder + "/" + build + "_refGene.bed"
-        genepred_to_bed(refGene_gtf,refGene_Bed)
+        genepred_to_bed(refGene_gtf,refGene_Bed,outfolder)
 
         if verbosity:
             print("Finished converting RefGene file to Bed ..." + "\n", file = sys.stderr)
