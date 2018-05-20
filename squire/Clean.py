@@ -73,6 +73,30 @@ def split_subF(subF):
         return [subF]
 
 
+def find_file(folder,pattern,base, wildpos, needed):
+    foundfile=False
+    if wildpos == 1:
+        file_list=glob.glob(folder + "/" + "*" + pattern)
+    elif wildpos ==2:
+        file_list=glob.glob(folder + "/" + pattern + "*")
+    if len(file_list)>1: #if more than one file in folder
+        if not base:
+            raise Exception("More than 1 " + pattern + " file")
+        for i in file_list:
+            if base in i:
+                foundfile = i
+        if not foundfile:
+            if needed:
+                raise Exception("No " + pattern + " file")
+            else:
+                foundfile = False
+    elif len(file_list) == 0:
+        foundfile = False
+    else:
+        foundfile = file_list[0]
+    return foundfile
+
+
 def main(**kwargs):
 
 
@@ -107,18 +131,7 @@ def main(**kwargs):
     RM_out = False
     print_unique=True
     if not rmsk:  #if infile not given, find *rmsk.txt file in squire_fetch folder and open as infile
-        if not os.path.isdir("squire_fetch"):
-            raise Exception("squire_fetch folder does not exist, please provide repeatmasker file")
-        rmsk_list = glob.glob("squire_fetch/*rmsk.txt")
-        if len(rmsk_list)>1: #if more than one .bed file in squire_fetch folder
-            raise Exception("More than one .bed file in squire_fetch; please give specific infile")
-        elif len(rmsk_list)==0:
-            rmsk_list = glob.glob("squire_fetch/*.out")
-            if len(rmsk_list)==1:
-                rmsk = rmsk_list[0]
-                RM_out = True
-        else:
-            rmsk = rmsk_list[0]
+        rmsk=find_file(clean_folder,".bed",build,1,True)
     elif ".out" in os.path.basename(rmsk):
         RM_out = True
 
