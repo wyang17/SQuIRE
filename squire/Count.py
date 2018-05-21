@@ -48,27 +48,27 @@ def make_dir(path):
 		os.umask(original_umask)
 
 def find_file(folder,pattern,base, wildpos, needed):
-	foundfile=False
-	if wildpos == 1:
-		file_list=glob.glob(folder + "/" + "*" + pattern)
-	elif wildpos ==2:
-		file_list=glob.glob(folder + "/" + pattern + "*")
-	if len(file_list)>1: #if more than one file in folder
-		if not base:
-			raise Exception("More than 1 " + pattern + " file")
-		for i in file_list:
-			if base in i:
-				foundfile = i
-		if not foundfile:
-			if needed:
-				raise Exception("No " + pattern + " file")
-			else:
-				foundfile = False
-	elif len(file_list) == 0:
-		foundfile = False
-	else:
-		foundfile = file_list[0]
-	return foundfile
+    foundfile=False
+    if wildpos == 1:
+        file_list=glob.glob(folder + "/" + "*" + pattern)
+    elif wildpos ==2:
+        file_list=glob.glob(folder + "/" + pattern + "*")
+    if len(file_list)>1: #if more than one file in folder
+        if not base:
+            raise Exception("More than 1 " + pattern + " file")
+        for i in file_list:
+            if base in i:
+                foundfile = i        
+    elif len(file_list) == 0:
+        foundfile = False  
+    else:
+        foundfile = file_list[0]
+    if not foundfile:
+        if needed:
+            raise Exception("No " + pattern + " file")
+        else:
+            foundfile = False             
+    return foundfile
 
 
 def rename_file(oldname,newname):

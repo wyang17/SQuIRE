@@ -22,9 +22,8 @@ import call_deseq2_prefilter
 import shutil
 
 
-def find_file(folder,pattern,base, wildpos):
+def find_file(folder,pattern,base, wildpos, needed):
     foundfile=False
-    needed=False
     if wildpos == 1:
         file_list=glob.glob(folder + "/" + "*" + pattern)
     elif wildpos ==2:
@@ -34,18 +33,17 @@ def find_file(folder,pattern,base, wildpos):
             raise Exception("More than 1 " + pattern + " file")
         for i in file_list:
             if base in i:
-                foundfile = i
-        if not foundfile:
-            if needed: 
-                raise Exception("No " + pattern + " file")
-            else: 
-                foundfile = False
+                foundfile = i        
     elif len(file_list) == 0:
-        foundfile = False
+        foundfile = False  
     else:
         foundfile = file_list[0]
+    if not foundfile:
+        if needed:
+            raise Exception("No " + pattern + " file")
+        else:
+            foundfile = False             
     return foundfile
-
 
 def make_tempfile(basename, step, outfolder):
     tmpfile = tempfile.NamedTemporaryFile(delete=False, dir = outfolder, prefix= basename + "_" + step +  ".tmp")
@@ -77,7 +75,28 @@ def get_basename(filepath):
         filebase = os.path.splitext(filename)[0]
         return filebase
 
-def create_count_dict(infilepath,count_dict,group_list,stringtie_list):
+def get_groupfiles(group,gene_files,subF_files,TE_files,subfamily,count_folder):
+    if "*" not in group:
+        if "," in group:
+            group_list = group.split(",")    
+        else:
+            group_list=[group]    
+        for sample in group_list: 
+            if subfamily:
+                subF_files.append(find_file(count_folder,"_subFcounts.txt",sample,1,True))
+            else:
+                TE_files.append(find_file(count_folder,"_TEcounts.txt",sample,1,True))
+            gene_files.append(glob.glob(count_folder + "/" + sample + "_refGenecounts.txt")[0])
+    elif "*" in group:
+        if subfamily:
+            subF_files+=(glob.glob(count_folder + "/" + group + "_subFcounts.txt"))
+        else:
+            TE_files+=(glob.glob(count_folder + "/" + group + "_TEcounts.txt"))
+        gene_files+=(glob.glob(count_folder + "/" + group + "_refGenecounts.txt"))
+        group_list=[get_basename(gene_file).replace("_refGenecounts","") for gene_file in (glob.glob(count_folder + "/" + group + "_refGenecounts.txt"))]
+    return group_list  
+
+def create_count_dict(infilepath,count_dict,stringtie_list):
     name=get_basename(infilepath).replace("_refGenecounts","")
     with open(infilepath,'r') as infile:
         header = infile.readline().rstrip()
@@ -196,16 +215,18 @@ def main(**kwargs):
     if args is None: ## i.e. standalone script called from command line in normal way
         parser = argparse.ArgumentParser(description = """Performs differential expression analysis on TEs and genes""")
         parser._optionals.title = "Arguments"
-        parser.add_argument("-1","--group1", help = "List of basenames for group1 (Treatment) samples, can also provide string pattern common to all group1 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
-        parser.add_argument("-2","--group2", help = "List of basenames for group2 (Control) samples, can also provide string pattern common to all group2 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
+        parser.add_argument("-1","--group1", help = "List of basenames for group1 (Treatment) samples, can also provide string pattern common to all group1 basenames with * ",required = True, type = str, metavar = "<str1,str2> or <*str*>")
+        parser.add_argument("-2","--group2", help = "List of basenames for group2 (Control) samples, can also provide string pattern common to all group2 basenames with * ",required = True, type = str, metavar = "<str1,str2> or <*str*>")
         parser.add_argument("-A","--condition1", help = "Name of condition for group1",required = True, type = str, metavar = "<str>")
         parser.add_argument("-B","--condition2", help = "Name of condition for group2",required = True, type = str, metavar = "<str>")
         parser.add_argument("-i","--count_folder", help = "Folder location of outputs from SQuIRE Count (optional, default = 'squire_count')", type = str, metavar = "<folder>",default="squire_count")
         parser.add_argument("-o","--call_folder", help = "Destination folder for output files (optional; default='squire_call')", type = str, metavar = "<folder>", default="squire_call")
         parser.add_argument("-s","--subfamily", help = "Compare TE counts by subfamily. Otherwise, compares TEs at locus level (optional; default=False)", action = "store_true", default = False)
         parser.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
-        parser.add_argument("-N","--projectname", help = "Basename for project", type = str, metavar = "<str>",default=False)
+        parser.add_argument("-N","--projectname", help = "Basename for project, default='SQuIRE'",type = str, metavar = "<str>",default="SQuIRE")
         parser.add_argument("-f","--output_format", help = "Output figures as html or pdf", type = str, metavar = "<str>",default="html")
+        parser.add_argument("-t","--table_only", help = "Output count table only, don't want to perform differential expression with DESeq2", action = "store_true", default = False)
+        #parser.add_argument("-c","--cluster", help = "Want to cluster samples by gene and TE expression", action = "store_true", default = False)
         parser.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
 
         args,extra_args = parser.parse_known_args()
@@ -223,6 +244,7 @@ def main(**kwargs):
     subfamily=args.subfamily
     output_format = args.output_format
     pthreads= args.pthreads
+    table_only=args.table_only
     debug = True
     label_no=20
     threshold=0
@@ -240,57 +262,31 @@ def main(**kwargs):
 
 
     make_dir(outfolder)
-    if "," in group1:
-        group1_list = group1.split(",")
-        group1_counts = []
-        for name1 in group1_list:            
-            group1_counts.append(glob.glob(count_folder + "/" + name1 + "_refGenecounts.txt")[0])
+    gene_files = []  
+    subF_files=[]   
+    TE_files=[]    
 
-    else:
-        group1_list=[group1]
-        group1_counts = glob.glob(count_folder + "/" + group1 + "_refGenecounts.txt")
-    if "," in group2:
-        group2_list = group2.split(",")
-        group2_counts=[]
-        for name2 in group2_list:            
-            group2_counts.append(glob.glob(count_folder + "/" + name2 + "_refGenecounts.txt")[0])
-    else:
-        group2_list=[group2]
-        group2_counts = glob.glob(count_folder + "/" + group2 + "_refGenecounts.txt")
+
+    group1_list=get_groupfiles(group1,gene_files,subF_files,TE_files,subfamily,count_folder)
+    group2_list=get_groupfiles(group2,gene_files,subF_files,TE_files,subfamily,count_folder)
 
     count_dict = {}
     gene_list=set()
 
     TE_dict={}
-
-    if subfamily:
-        subF_files=[]        
-        for sample in group1_list:
-            subF_files.append(find_file(count_folder,"_subFcounts.txt",sample,1))
-        subF_combo = outfolder + "/" + projectname + "_subF_combo" + ".txt"
-        for sample in group2_list:
-            subF_files.append(find_file(count_folder,"_subFcounts.txt",sample,1))
-        subF_combo = outfolder + "/" + projectname + "_subF_combo" + ".txt"        
+    subF_combo = outfolder + "/" + projectname + "_subF_combo" + ".txt"
+    TE_combo = outfolder + "/" + projectname + "_TE_combo" + ".txt"
+    if subfamily: 
         for subF in subF_files:
             combinefiles(subF,subF_combo)       
         create_subfamily_dict(subF_combo,TE_dict)
-
     else:
-        TE_files=[]      
-        for sample in group1_list:  
-            TE_files.append(find_file(count_folder,"_TEcounts.txt",sample,1))
-        for sample in group2_list:  
-            TE_files.append(find_file(count_folder,"_TEcounts.txt",sample,1))            
-        TE_combo = outfolder + "/" + projectname + "_TE_combo" + ".txt"
         for TE in TE_files:
             combinefiles(TE,TE_combo)        
         create_TE_dict(TE_combo,TE_dict,threshold)
 
-
-    for group1 in group1_counts:        
-        create_count_dict(group1,count_dict,group1_list,gene_list)
-    for group2 in group2_counts:        
-        create_count_dict(group2,count_dict,group2_list,gene_list)   
+    for genefile in gene_files:        
+        create_count_dict(genefile,count_dict,gene_list)
 
     coldata=outfolder + "/" + projectname + "_coldata.txt"
     with open(coldata,'w') as datafile:
@@ -334,7 +330,8 @@ def main(**kwargs):
             DEfile.writelines(TE_out + "\t" + countline + "\n")
 
     prefilter = True
-    create_rscript(counttable,coldata,outfolder,output_format,projectname,verbosity,str(pthreads),prefilter,condition1,condition2,label_no)
+    if not table_only:
+        create_rscript(counttable,coldata,outfolder,output_format,projectname,verbosity,str(pthreads),prefilter,condition1,condition2,label_no)
 
     ####### STOP TIMING SCRIPT #######################
     if verbosity:
