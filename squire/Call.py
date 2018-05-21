@@ -202,7 +202,7 @@ def main(**kwargs):
         parser.add_argument("-o","--call_folder", help = "Destination folder for output files (optional; default='squire_call')", type = str, metavar = "<folder>", default="squire_call")
         parser.add_argument("-s","--subfamily", help = "Compare TE counts by subfamily. Otherwise, compares TEs at locus level (optional; default=False)", action = "store_true", default = False)
         parser.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
-        parser.add_argument("-N","--projectname", help = "Basename for project", type = str, metavar = "<str>",default=False)
+        parser.add_argument("-N","--projectname", help = "Basename for project, default='SQuIRE'",type = str, metavar = "<str>",default="SQuIRE")
         parser.add_argument("-f","--output_format", help = "Output figures as html or pdf", type = str, metavar = "<str>",default="html")
         parser.add_argument("-t","--table_only", help = "Output count table only, don't want to perform differential expression with DESeq2", action = "store_true", default = False)
         #parser.add_argument("-c","--cluster", help = "Want to cluster samples by gene and TE expression", action = "store_true", default = False)
