@@ -274,7 +274,8 @@ def main(**kwargs):
     gene_list=set()
 
     TE_dict={}
-
+    subF_combo = outfolder + "/" + projectname + "_subF_combo" + ".txt"
+    TE_combo = outfolder + "/" + projectname + "_TE_combo" + ".txt"
     if subfamily: 
         for subF in subF_files:
             combinefiles(subF,subF_combo)       
