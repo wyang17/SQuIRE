@@ -75,7 +75,28 @@ def get_basename(filepath):
         filebase = os.path.splitext(filename)[0]
         return filebase
 
-def create_count_dict(infilepath,count_dict,group_list,stringtie_list):
+def get_groupfiles(group,gene_files,subF_files,TE_files,subfamily):
+    if "*" not in group:
+        if "," in group:
+            group_list = group.split(",")    
+        else:
+            group_list=[group]    
+        for sample in group_list: 
+            if subfamily:
+                subF_files.append(find_file(count_folder,"_subFcounts.txt",sample,1,True))
+            else:
+                TE_files.append(find_file(count_folder,"_TEcounts.txt",sample,1,True))
+            gene_files.append(glob.glob(count_folder + "/" + sample + "_refGenecounts.txt")[0])
+    elif "*" in group:
+        if subfamily:
+            subF_files+=(glob.glob(count_folder + "/" + group + "_subFcounts.txt"))
+        else:
+            TE_files+=(glob.glob(count_folder + "/" + group + "_TEcounts.txt"))
+        gene_files+=(glob.glob(count_folder + "/" + group + "_refGenecounts.txt"))
+        group_list=[get_basename(gene_file).replace("_refGenecounts","") for gene_file in (glob.glob(count_folder + "/" + group + "_refGenecounts.txt"))]
+    return group_list  
+
+def create_count_dict(infilepath,count_dict,stringtie_list):
     name=get_basename(infilepath).replace("_refGenecounts","")
     with open(infilepath,'r') as infile:
         header = infile.readline().rstrip()
@@ -194,8 +215,8 @@ def main(**kwargs):
     if args is None: ## i.e. standalone script called from command line in normal way
         parser = argparse.ArgumentParser(description = """Performs differential expression analysis on TEs and genes""")
         parser._optionals.title = "Arguments"
-        parser.add_argument("-1","--group1", help = "List of basenames for group1 (Treatment) samples, can also provide string pattern common to all group1 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
-        parser.add_argument("-2","--group2", help = "List of basenames for group2 (Control) samples, can also provide string pattern common to all group2 basenames",required = True, type = str, metavar = "<str1,str2> or <*str*>")
+        parser.add_argument("-1","--group1", help = "List of basenames for group1 (Treatment) samples, can also provide string pattern common to all group1 basenames with * ",required = True, type = str, metavar = "<str1,str2> or <*str*>")
+        parser.add_argument("-2","--group2", help = "List of basenames for group2 (Control) samples, can also provide string pattern common to all group2 basenames with * ",required = True, type = str, metavar = "<str1,str2> or <*str*>")
         parser.add_argument("-A","--condition1", help = "Name of condition for group1",required = True, type = str, metavar = "<str>")
         parser.add_argument("-B","--condition2", help = "Name of condition for group2",required = True, type = str, metavar = "<str>")
         parser.add_argument("-i","--count_folder", help = "Folder location of outputs from SQuIRE Count (optional, default = 'squire_count')", type = str, metavar = "<folder>",default="squire_count")
@@ -241,57 +262,30 @@ def main(**kwargs):
 
 
     make_dir(outfolder)
-    if "," in group1:
-        group1_list = group1.split(",")
-        group1_counts = []
-        for name1 in group1_list:            
-            group1_counts.append(glob.glob(count_folder + "/" + name1 + "_refGenecounts.txt")[0])
+    gene_files = []  
+    subF_files=[]   
+    TE_files=[]    
 
-    else:
-        group1_list=[group1]
-        group1_counts = glob.glob(count_folder + "/" + group1 + "_refGenecounts.txt")
-    if "," in group2:
-        group2_list = group2.split(",")
-        group2_counts=[]
-        for name2 in group2_list:            
-            group2_counts.append(glob.glob(count_folder + "/" + name2 + "_refGenecounts.txt")[0])
-    else:
-        group2_list=[group2]
-        group2_counts = glob.glob(count_folder + "/" + group2 + "_refGenecounts.txt")
+
+    group1_list=get_groupfiles(group1,gene_files,subF_files,TE_files,subfamily)
+    group2_list=get_groupfiles(group2,gene_files,subF_files,TE_files,subfamily)
 
     count_dict = {}
     gene_list=set()
 
     TE_dict={}
 
-    if subfamily:
-        subF_files=[]        
-        for sample in group1_list:
-            subF_files.append(find_file(count_folder,"_subFcounts.txt",sample,1,True))
-        subF_combo = outfolder + "/" + projectname + "_subF_combo" + ".txt"
-        for sample in group2_list:
-            subF_files.append(find_file(count_folder,"_subFcounts.txt",sample,1,True))
-        subF_combo = outfolder + "/" + projectname + "_subF_combo" + ".txt"        
+    if subfamily: 
         for subF in subF_files:
             combinefiles(subF,subF_combo)       
         create_subfamily_dict(subF_combo,TE_dict)
-
     else:
-        TE_files=[]      
-        for sample in group1_list:  
-            TE_files.append(find_file(count_folder,"_TEcounts.txt",sample,1,True))
-        for sample in group2_list:  
-            TE_files.append(find_file(count_folder,"_TEcounts.txt",sample,1,True))            
-        TE_combo = outfolder + "/" + projectname + "_TE_combo" + ".txt"
         for TE in TE_files:
             combinefiles(TE,TE_combo)        
         create_TE_dict(TE_combo,TE_dict,threshold)
 
-
-    for group1 in group1_counts:        
-        create_count_dict(group1,count_dict,group1_list,gene_list)
-    for group2 in group2_counts:        
-        create_count_dict(group2,count_dict,group2_list,gene_list)   
+    for genefile in gene_files:        
+        create_count_dict(genefile,count_dict,gene_list)
 
     coldata=outfolder + "/" + projectname + "_coldata.txt"
     with open(coldata,'w') as datafile:
