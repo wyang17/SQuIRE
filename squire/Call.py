@@ -75,7 +75,7 @@ def get_basename(filepath):
         filebase = os.path.splitext(filename)[0]
         return filebase
 
-def get_groupfiles(group,gene_files,subF_files,TE_files,subfamily):
+def get_groupfiles(group,gene_files,subF_files,TE_files,subfamily,count_folder):
     if "*" not in group:
         if "," in group:
             group_list = group.split(",")    
@@ -267,8 +267,8 @@ def main(**kwargs):
     TE_files=[]    
 
 
-    group1_list=get_groupfiles(group1,gene_files,subF_files,TE_files,subfamily)
-    group2_list=get_groupfiles(group2,gene_files,subF_files,TE_files,subfamily)
+    group1_list=get_groupfiles(group1,gene_files,subF_files,TE_files,subfamily,count_folder)
+    group2_list=get_groupfiles(group2,gene_files,subF_files,TE_files,subfamily,count_folder)
 
     count_dict = {}
     gene_list=set()
