@@ -204,8 +204,8 @@ def main(**kwargs):
         parser.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
         parser.add_argument("-N","--projectname", help = "Basename for project", type = str, metavar = "<str>",default=False)
         parser.add_argument("-f","--output_format", help = "Output figures as html or pdf", type = str, metavar = "<str>",default="html")
-        parser.add_argument("-d","--DE", help = "Want to perform differential expression with DESeq2", action = "store_true", default = False)
-        parser.add_argument("-c","--cluster", help = "Want to cluster samples by gene and TE expression", action = "store_true", default = False)
+        parser.add_argument("-t","--table_only", help = "Output count table only, don't want to perform differential expression with DESeq2", action = "store_true", default = False)
+        #parser.add_argument("-c","--cluster", help = "Want to cluster samples by gene and TE expression", action = "store_true", default = False)
         parser.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
 
         args,extra_args = parser.parse_known_args()
@@ -223,7 +223,7 @@ def main(**kwargs):
     subfamily=args.subfamily
     output_format = args.output_format
     pthreads= args.pthreads
-    DE=args.DE
+    table_only=args.table_only
     debug = True
     label_no=20
     threshold=0
@@ -335,7 +335,7 @@ def main(**kwargs):
             DEfile.writelines(TE_out + "\t" + countline + "\n")
 
     prefilter = True
-    if DE:
+    if not table_only:
         create_rscript(counttable,coldata,outfolder,output_format,projectname,verbosity,str(pthreads),prefilter,condition1,condition2,label_no)
 
     ####### STOP TIMING SCRIPT #######################
