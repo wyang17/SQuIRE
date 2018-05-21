@@ -22,9 +22,8 @@ import call_deseq2_prefilter
 import shutil
 
 
-def find_file(folder,pattern,base, wildpos):
+def find_file(folder,pattern,base, wildpos, needed):
     foundfile=False
-    needed=False
     if wildpos == 1:
         file_list=glob.glob(folder + "/" + "*" + pattern)
     elif wildpos ==2:
@@ -34,18 +33,17 @@ def find_file(folder,pattern,base, wildpos):
             raise Exception("More than 1 " + pattern + " file")
         for i in file_list:
             if base in i:
-                foundfile = i
-        if not foundfile:
-            if needed: 
-                raise Exception("No " + pattern + " file")
-            else: 
-                foundfile = False
+                foundfile = i        
     elif len(file_list) == 0:
-        foundfile = False
+        foundfile = False  
     else:
         foundfile = file_list[0]
+    if not foundfile:
+        if needed:
+            raise Exception("No " + pattern + " file")
+        else:
+            foundfile = False             
     return foundfile
-
 
 def make_tempfile(basename, step, outfolder):
     tmpfile = tempfile.NamedTemporaryFile(delete=False, dir = outfolder, prefix= basename + "_" + step +  ".tmp")
@@ -266,10 +264,10 @@ def main(**kwargs):
     if subfamily:
         subF_files=[]        
         for sample in group1_list:
-            subF_files.append(find_file(count_folder,"_subFcounts.txt",sample,1))
+            subF_files.append(find_file(count_folder,"_subFcounts.txt",sample,1,True))
         subF_combo = outfolder + "/" + projectname + "_subF_combo" + ".txt"
         for sample in group2_list:
-            subF_files.append(find_file(count_folder,"_subFcounts.txt",sample,1))
+            subF_files.append(find_file(count_folder,"_subFcounts.txt",sample,1,True))
         subF_combo = outfolder + "/" + projectname + "_subF_combo" + ".txt"        
         for subF in subF_files:
             combinefiles(subF,subF_combo)       
@@ -278,9 +276,9 @@ def main(**kwargs):
     else:
         TE_files=[]      
         for sample in group1_list:  
-            TE_files.append(find_file(count_folder,"_TEcounts.txt",sample,1))
+            TE_files.append(find_file(count_folder,"_TEcounts.txt",sample,1,True))
         for sample in group2_list:  
-            TE_files.append(find_file(count_folder,"_TEcounts.txt",sample,1))            
+            TE_files.append(find_file(count_folder,"_TEcounts.txt",sample,1,True))            
         TE_combo = outfolder + "/" + projectname + "_TE_combo" + ".txt"
         for TE in TE_files:
             combinefiles(TE,TE_combo)        
