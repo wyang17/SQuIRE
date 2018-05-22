@@ -57,18 +57,9 @@ First, check if miniconda is already installed
 7. Install SQuIRE in the virtual environment
     * `git clone https://github.com/wyang17/SQuIRE; cd SQuIRE; pip install -e .`
 
+###
 
-
-SQuIRE was written and tested with the following specific versions of software:
-* `STAR 2.5.3a`
-* `bedtools 2.25.0`
-* `samtools 1.1`
-* `stringtie 1.3.3b`
-* `DESeq2 1.16.1`
-* `R 3.4.1`
-* `Python 2.7.9`
-
-_*If installing these software with conda is unsuccessful, we recommend installing these versions with squire Build to ensure compatibility with SQuIRE.*_
+_*If installing the any prerequisite software with conda is unsuccessful, we recommend installing these versions with squire Build to ensure compatibility with SQuIRE.*_
   * [squire Build:](#squire-build)
       * `squire Build -s all`
 
@@ -256,6 +247,8 @@ The following information is included in the file:
   - Quantifies RNAseq reads aligning to TEs and genes
   - Outputs counts for RefSeq genes and TEs at the locus and subfamily levels
 
+<img align="center" width="825" height="600" src="images/Count_overview.png">
+
   - **usage:** `squire Count [-h] [-m <folder>] [-c <folder>] [-o <folder>] [-t <folder>] [-f <folder>] -r <int> [-n <str>] [-b <build>] [-p <int>] [-s <int>] [-e EM] [-v]
 `
 
@@ -276,7 +269,7 @@ The following information is included in the file:
   -v, --verbosity|Want messages and runtime printed to stderr (optional; default=False)
 
 
-<img align="center" width="825" height="600" src="images/Count_overview.png">
+
 
 
 ### Analysis Stage ###

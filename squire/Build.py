@@ -172,7 +172,7 @@ def main(**kwargs):
                 sp.check_call(["/bin/sh", "-c", make_command],cwd = make_folder)
                 new_package_path = make_folder + "/" + "bin"
             elif "samtools" in package:
-                make_folder = new_package_path + "/" "samtools-1.8"
+                make_folder = new_package_path + "/" "samtools-1.1"
                 make_command_list = ["make"]
                 make_command = "".join(make_command_list)
                 sp.check_call(["/bin/sh", "-c", make_command],cwd = make_folder)
