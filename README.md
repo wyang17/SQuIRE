@@ -55,7 +55,8 @@ First, check if miniconda is already installed
     * The conda installation message may instruct the use of 'conda activate squire'. However, this is a newer and less stable usage than "source activate squire", which we recommend.
 
 7. Install SQuIRE in the virtual environment
-    * `git clone https://github.com/wyang17/SQuIRE; cd SQuIRE; pip install -e .`    * 
+    * `git clone https://github.com/wyang17/SQuIRE; cd SQuIRE; pip install -e .`
+
 
 
 SQuIRE was written and tested with the following specific versions of software:
@@ -70,10 +71,13 @@ SQuIRE was written and tested with the following specific versions of software:
 _*If installing these software with conda is unsuccessful, we recommend installing these versions with squire Build to ensure compatibility with SQuIRE.*_
   * [squire Build:](#squire-build)
       * `squire Build -s all`
-
+_*Update SQuIRE using git within the SQuIRE folder*_
+  * `cd SQuIRE; git pull`
 
 
 #### Pipeline Steps ####
+An example pipeline with sample scripts is described [here](#Example Pipeline), with details of each step described below.. 
+
 
 <img align="center" width="825" height="600" src="images/overview_squire.png">
 
@@ -367,7 +371,7 @@ The [RNA-seqlopedia](https://rnaseq.uoregon.edu/) by Cresko Lab at University of
 You can gauge how much vmem to assign to each job based on the number of reads in your datasets.
 
 #### Can SQuIRE be used on ChIP or small RNA? ####
-Not right now, but to be addressed in the future.
+SQuIRE has not yet been tested with ChIP or small RNA sequencing data, so its compatibility has not yet been determined.
 
 
 ### Example Pipeline ###
