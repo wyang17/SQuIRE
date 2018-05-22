@@ -17,7 +17,7 @@ def get_version(string):
 
 
 setup(
-    name='SQuIRE',
+    name='TESQuIRE',
     provides='SQuIRE',
     version=get_version(open('squire/__init__.py').read()),
     author='Wan Rou Yang',
