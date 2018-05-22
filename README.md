@@ -28,11 +28,11 @@ First, check if miniconda is already installed
 
 1. Download Miniconda from https://conda.io/miniconda.html
 
-    * `wget -c https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh`
+    * `wget -c https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh`
     * Documentation will appear as the software downloads
 
 2. Execute the installer and add to PATH in .bashrc
-    * `bash Miniconda2-latest-Linux-x86_64.sh`
+    * `bash Miniconda3-latest-Linux-x86_64.sh`
     * Press ENTER key to review the Miniconda license
     * Type `yes` to approve the license terms
     * Pres ENTER key to confirm install locatino (or enter a preferred location)
@@ -46,16 +46,16 @@ First, check if miniconda is already installed
     * `exec $SHELL`
 
 5. Create new virtual environment
-    * `conda create --name squire --override-channels -c iuc -c bioconda -c conda-forge -c defaults -c r python=2.7.9 bioconductor-deseq2=1.16.1 r-base=3.4.1 r-pheatmap bioconductor-vsn bioconductor-biocparallel=1.12.0 r-ggrepel  star=2.5.3a  bedtools=2.25.0 samtools=1.1 stringtie=1.3.3 igvtools=2.3.93  ucsc-genepredtobed    ucsc-genepredtogtf  ucsc-bedgraphtobigwig r-hexbin `
+    * `conda create --name squire_test --override-channels -c iuc -c bioconda -c conda-forge -c defaults -c r python=2.7.13 bioconductor-deseq2=1.16.1 r-base=3.4.1 r-pheatmap bioconductor-vsn bioconductor-biocparallel=1.12.0 r-ggrepel  star=2.5.3a  bedtools=2.25.0 samtools=1.1 stringtie=1.3.3 igvtools=2.3.93  ucsc-genepredtobed    ucsc-genepredtogtf  ucsc-bedgraphtobigwig r-hexbin git=2.11.1`
 
     * Type `y` to proceed.
-
-5. Install SQuIRE in the virtual environment
-    * `pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple SQuIRE`
-
 6. **Activate the virtual environment each time you the SQuIRE pipeline**
 
-    * `source activate squire`
+    * `source activate squire`    
+    * The conda installation message may instruct the use of 'conda activate squire'. However, this is a newer and less stable usage than "source activate squire", which we recommend.
+
+7. Install SQuIRE in the virtual environment
+    * `git clone https://github.com/wyang17/SQuIRE; cd SQuIRE; pip install -e .`    * 
 
 
 SQuIRE was written and tested with the following specific versions of software:
