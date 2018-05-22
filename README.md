@@ -71,17 +71,17 @@ SQuIRE was written and tested with the following specific versions of software:
 _*If installing these software with conda is unsuccessful, we recommend installing these versions with squire Build to ensure compatibility with SQuIRE.*_
   * [squire Build:](#squire-build)
       * `squire Build -s all`
-_*Update SQuIRE using git within the SQuIRE folder*_
+
+_*Update SQuIRE using git within the SQuIRE folder.*_
   * `cd SQuIRE; git pull`
 
 
-#### Pipeline Steps ####
-An example pipeline with sample scripts is described [here](#Example Pipeline), with details of each step described below.. 
+## Pipeline Overview ##
 
 
 <img align="center" width="825" height="600" src="images/overview_squire.png">
 
-Preparation Stage
+*Preparation Stage*
 1)    [Fetch:](#squire-fetch)
                         Downloads input files from RefGene and generates STAR index
                         Only needs to be done once initially to acquire genomic input files or if a new build is desired.
@@ -89,7 +89,7 @@ Preparation Stage
 2)    [Clean:](#squire-clean)
                         Filters Repeatmasker file for Repeats of interest, collapses overlapping repeats, and returns as BED file.
 
-Quantification Stage
+*Quantification Stage*
 
 1)    [Map:](#squire-map)
                         Aligns RNAseq data
@@ -98,12 +98,12 @@ Quantification Stage
                         Quantifies RNAseq reads aligning to TEs
 
 
-Analysis Stage
+*Analysis Stage*
 
 1)    [Call:](#squire-call)
                         Compiles and outputs differential expression from multiple alignments
 
-Follow-up Stage
+*Follow-up Stage*
 1)    [Draw:](#squire-draw)
                         Creates BEDgraphs from RNAseq data
 
@@ -111,7 +111,7 @@ Follow-up Stage
                         Reports individual transposable element sequences
 
 
-
+An example pipeline with sample scripts is described [here](#example-pipeline).
 
 ## Arguments for each step ##
 
