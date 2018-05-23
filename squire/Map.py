@@ -339,9 +339,10 @@ def main(**kwargs):
                 if strand.lower()=="strand":
                     continue
                 taxo = line[4]
-                TE_type=line[5].lower()
+                TE_type=line[5].lower()                
                 if TE_type not in nonref_types:
                     raise Exception('TE type needs to be "polymorphism","novel","plasmid",or "transgene"')
+                chrom = chrom + "_" + TE_type                    
                 if not chrom.startswith("chr"):
                     chrom="chr"+chrom 
                 #chrom=chrom + "_" + TE_type
