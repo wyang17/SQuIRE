@@ -87,7 +87,7 @@ _*If installing these software with conda is unsuccessful, we recommend installi
 2)    [Clean:](#squire-clean)
                         Filters Repeatmasker file for Repeats of interest, collapses overlapping repeats, and returns as BED file.
 
-_*(Optional: Incorporation of non-reference TE sequence)[non-reference-file-format] *_
+_*[Optional: Incorporation of non-reference TE sequence](non-reference-file-format) *_
 
 *Quantification Stage*
 
@@ -212,8 +212,7 @@ The following information should be included in the file:
     * non-reference TE sequence
 
 ##### Example File #####
-![alt text](images/Non_ref_example.jpg "Example extra file")
-
+<img align="center" width="800" height="625" src="images/Non_ref_example.jpg">
 
 ### Quantification Stage ###
 
