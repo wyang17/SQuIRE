@@ -195,21 +195,21 @@ The following information should be included in the file:
   1. **Chromosome or Plasmid Identification** 
     * SQuIRE will add an identifier with an underscore "\_" and the insertion type to distinguish the annotation from the reference genome.
   2. **Insertion Start**
-    * 0-based numerical start location of the non-reference repeat
+    * 0-based numerical start location of the non-reference repeat.
   3. **Insertion End**
-    * 0-based numerical end location.  For chromosome insertions, will only be one base different from Insertion Start
+    * 0-based numerical end location.  For chromosome insertions, this will only be one base different from Insertion Start.
   4. **Strand**
-    * \+ or - Orientation of 'sense' strand of TE annotation
+    * \+ or - Orientation of 'sense' strand of TE annotation.
   5. **TE classification**
-    * Provide TE Subfamily, Family and Order, separated by colons ":"
+    * Provide TE Subfamily, Family and Order, separated by colons ":".
   6. **Insertion Type**
-    * Must be one of: polymorphic insertion, novel insertion, plasmid, or transgene
+    * Must be one of: polymorphic insertion, novel insertion, plasmid, or transgene.
   7. **Left-Flank Sequence**
-    * Flanking sequence before the TE insertion
+    * Flanking sequence before the TE insertion.
   8. **Right-Flank Sequence**
-    * Flanking sequence after the TE insertion
+    * Flanking sequence after the TE insertion.
   9. **TE Sequence**
-    * Non-reference TE sequence
+    * Non-reference TE sequence.
 
 ##### Example File #####
 <img align="center" src="images/Non_ref_example.jpg">
