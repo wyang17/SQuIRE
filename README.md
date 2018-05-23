@@ -17,14 +17,9 @@
 
 ## Installation ##
 
-##### Virtual Environments ####
+We recommend using [Conda](https://conda.io/docs/) for SQuIRE installation.
 
-SQuIRE works best in a virtual environment.  We recommend using Conda to set up the SQuIRE environment.
-
-Conda is a simple tool that both installs and stores variables and modules in Python environments for repeated use.  
-
-First, check if miniconda is already installed
-   * `conda`
+Conda is a package manager that installs and runs packages and their dependencies.  Conda also creates virtual environments and allows users to switch between those environments. The instructions below installs Conda and creates a virtual environment in which to install software required by SQuIRE. Following these instructions ensures that SQuIRE has the correct software versions and dependencies and prevents conflicts with other software 
 
 1. Download Miniconda from https://conda.io/miniconda.html
 
@@ -56,15 +51,26 @@ First, check if miniconda is already installed
 
 7. Install SQuIRE in the virtual environment
     * `git clone https://github.com/wyang17/SQuIRE; cd SQuIRE; pip install -e .`
+    * The `-e` parameter for pip install above ensures that updating SQuIRE will automatically change how SQuIRE runs, so that there is no need to re-install SQuIRE with a new version.
+    * To update SQuIRE, go to the SQuIRE folder and enter:
+      *  `git pull`
 
-###
+### Notes ###
 
-_*If installing the any prerequisite software with conda is unsuccessful, we recommend installing these versions with squire Build to ensure compatibility with SQuIRE.*_
+_*SQuIRE was written and tested with the following specific versions of software:_*
+* `STAR 2.5.3a`
+* `bedtools 2.27.0`
+* `samtools 1.1`
+* `stringtie 1.3.3b`
+* `DESeq2 1.16.1`
+* `R 3.4.1`
+* `Python 2.7`
+
+_*If installing these software with conda is unsuccessful, we recommend installing these versions with squire Build to ensure compatibility with SQuIRE.*_
   * [squire Build:](#squire-build)
       * `squire Build -s all`
 
-_*Update SQuIRE using git within the SQuIRE folder.*_
-  * `cd SQuIRE; git pull`
+
 
 
 ## Pipeline Overview ##
