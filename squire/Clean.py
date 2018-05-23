@@ -358,6 +358,7 @@ def main(**kwargs):
                 TE_type=line[5].lower()
                 if TE_type not in nonref_types:
                     raise Exception('TE type needs to be "polymorphism","novel","plasmid",or "transgene"')
+                chrom = chrom + "_" + TE_type                                
                 if not chrom.startswith("chr"):
                     chrom="chr"+chrom 
                 if "plasmid" in TE_type: #if plasmid

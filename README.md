@@ -159,6 +159,31 @@ An example pipeline with sample scripts is described [here](#example-pipeline).
  -k, --keep | Keep downloaded compressed files. Optional, default = False
  -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False
 
+##### Extra Non-reference File Format #####
+For known TE sequences that are not included in the reference genome, a tab-delimited file can be provided to SQuIRE to incorporate the non-reference TEs into the analysis. This file can be inputted into the Map and Clean steps with the `--extra` parameter.
+
+The following information should be included in the file:
+  1. **Chromosome or Plasmid Identification** 
+    * SQuIRE will add an identifier with an underscore "\_" and the insertion type to distinguish the annotation from the reference genome.
+  2. **Insertion Start**
+    * 0-based numerical start location of the non-reference repeat
+  3. **Insertion End**
+    * 0-based numerical end location.  For chromosome insertions, will only be one base different from Insertion Start
+  4. **Strand**
+    * \+ or - Orientation of 'sense' strand of TE annotation
+  5. **TE classification**
+    * Provide TE Subfamily, Family and Order, separated by colons ":"
+  6. **Insertion Type**
+    * Must be one of: polymorphic insertion, novel insertion, plasmid, or transgene
+  7. **Left-Flank Sequence**
+    * Flanking sequence before the TE insertion
+  8. **Right-Flank Sequence**
+    * Flanking sequence after the TE insertion
+  9. **TE Sequence**
+    * non-reference TE sequence
+
+##### Example File #####
+![alt text](images/Non_ref_example.jpg "Example extra file")
 
 
 #### squire Clean ####
@@ -183,6 +208,8 @@ An example pipeline with sample scripts is described [here](#example-pipeline).
   -s <str>, --subfamily <str>| Comma-separated list of desired repeat subfamilies, eg 'L1HS,AluYb'. Column 11 in repeatmasker file. Can use UNIX wildcard patterns. Optional
   -e <file>, --extra <file>| Filepath of extra tab-delimited file containing non-reference repeat sequences. Columns should be chr, start, stop, strand, subfamily, and sequence.  Optional; default = False
   -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False
+
+
 
 
 
@@ -215,36 +242,6 @@ An example pipeline with sample scripts is described [here](#example-pipeline).
   -g <file>, --gtf <file> | Optional GTF of genome transcripts.  For those interested in gene transcription
   -p <int>, --pthreads <int>| Launch <int> parallel threads. Optional, default = '1'
   -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False
-
-##### Extra File Format #####
-If target analysis is regarding plasmids and polymorphisms that are not included in the reference sequence, SQuIRE Map can accept additional sequence files at this step.  These extra sequences must be formatted in a tab delimited text files.
-
-The following information is included in the file:
-  1. **Chromosome or Plasmid Identification**
-    * *Chromosome:* must include "\_x" after the chrX input to differentiate the extra sequence from the entire chromosome reference.  If underscore is not included the polymorphism will replace the entire chromosome.  See formatting specifics in below example file.
-    * *Plasmid:* unique plasmid name
-  2. **Insertion Start**
-    * 0-based numerical start location of the non-reference repeat
-  3. **Insertion End**
-    * 0-based numerical end location.  For chromosome insertions, will only be one base different from Insertion Start
-  4. **Strand**
-    * \+ or - depending on strandedness
-  5. **Order**
-    * TE order (e.g. SINE)
-  6. **Family**
-    * TE family (e.g. Alu)
-  7. **Subfamily**
-    * Te subfamily (e.g. AluY)
-  8. **Left-Flank Length**
-    * Number of bases in the left flanking region before the sequence
-  9. **Right-Flank Length**
-    * Number of bases in the right flanking region after the sequence
-  10. **Sequence**
-    * List of bases in the non-reference repeat
-
-##### Example File #####
-![alt text](images/extra_format.png "Example extra file")
-
 
 
 #### squire Count ####

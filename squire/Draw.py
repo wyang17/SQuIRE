@@ -45,7 +45,6 @@ def find_file(folder,pattern,base, wildpos):
         foundfile = file_list[0]
     return foundfile
 
-
 def make_tempfile(basename, step, outfolder):
     tmpfile = tempfile.NamedTemporaryFile(delete=False, dir = outfolder, prefix= basename + "_" + step +  ".tmp")
     tmpname = tmpfile.name
@@ -75,7 +74,6 @@ def get_basename(filepath):
         filename = os.path.basename(filepath)
         filebase = os.path.splitext(filename)[0]
         return filebase
-
 
 def sort_coord(infile, outfile,chrcol,startcol):
     chrfieldsort = "-k" + str(chrcol) + "," + str(chrcol)
@@ -126,12 +124,13 @@ def bedgraph(infile,strandedness,outfolder,basename,normlib,pthreads,bedgraph_li
         sort_coord(bedgraph_multi,outfolder + "/" + basename + "_multi.bedgraph",1,2)
         bedgraph_list += [outfolder + "/" + basename + "_unique.bedgraph",outfolder + "/" + basename + "_multi.bedgraph"]
 
-def make_bigwig(chrominfo,bedgraph_list):
+def make_bigwig(chrominfo,bedgraph_list):    
     for bedgraph in bedgraph_list:
         outfile=bedgraph + ".bw"
-        igvcommand_list = ["bedGraphToBigWig",bedgraph, chrominfo,outfile]
+        igvcommand_list = ["bedGraphToBigWig",bedgraph, chrominfo,outfile] 
         igvcommand=" ".join(igvcommand_list)
         sp.check_call(["/bin/sh", "-c", igvcommand])
+        
 
 def main(**kwargs):
 
@@ -141,7 +140,7 @@ def main(**kwargs):
     if args is None: ## i.e. standalone script called from command line in normal way
         parser = argparse.ArgumentParser(description = """Makes unique and multi bedgraph files""")
         parser._optionals.title = "Arguments"
-        parser.add_argument("-f","--fetch_folder", help = "Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch'",type = str, metavar = "<folder>",default="squire_fetch")
+        parser.add_argument("-f","--fetch_folder", help = "Folder location of outputs from SQuIRE Fetch (optional, default = 'squire_fetch'",type = str, metavar = "<folder>",default="squire_fetch")     
         parser.add_argument("-m","--map_folder", help = "Folder location of outputs from SQuIRE Map (optional, default = 'squire_map')", type = str, metavar = "<folder>", default="squire_map")
         parser.add_argument("-o","--draw_folder", help = "Destination folder for output files (optional; default='squire_draw')", type = str, metavar = "<folder>", default="squire_draw")
         parser.add_argument("-n","--name", help = "Basename for bam file (required if more than one bam file in map_folder)", type = str, metavar = "<str>",default=False)
@@ -181,11 +180,11 @@ def main(**kwargs):
 
     if verbosity:
         print("Making unique and total bedgraphs "+ str(datetime.now())  + "\n",file = sys.stderr)
-    chrominfo = find_file(fetch_folder,"_chromInfo.txt",build,1)
+    chrominfo = find_file(fetch_folder,"_chromInfo.txt",build,1)    
     bedgraph_list=[]
     bedgraph(infile,strandedness,outfolder,basename,normlib,pthreads,bedgraph_list)
     if verbosity:
-        print("Making unique and total bigwigs "+ str(datetime.now())  + "\n",file = sys.stderr)
+        print("Making unique and total bigwigs "+ str(datetime.now())  + "\n",file = sys.stderr)    
     make_bigwig(chrominfo,bedgraph_list)
     ####### STOP TIMING SCRIPT #######################
     if verbosity:
