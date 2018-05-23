@@ -212,7 +212,7 @@ The following information should be included in the file:
     * Non-reference TE sequence
 
 ##### Example File #####
-<img align="center" width="800" height="625" src="images/Non_ref_example.jpg">
+<img align="center" src="images/Non_ref_example.jpg">
 
 ### Quantification Stage ###
 
