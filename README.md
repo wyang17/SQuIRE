@@ -87,6 +87,8 @@ _*If installing these software with conda is unsuccessful, we recommend installi
 2)    [Clean:](#squire-clean)
                         Filters Repeatmasker file for Repeats of interest, collapses overlapping repeats, and returns as BED file.
 
+_*(Optional: Incorporation of non-reference TE sequence)[non-reference-file-format] *_
+
 *Quantification Stage*
 
 1)    [Map:](#squire-map)
@@ -159,31 +161,6 @@ An example pipeline with sample scripts is described [here](#example-pipeline).
  -k, --keep | Keep downloaded compressed files. Optional, default = False
  -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False
 
-##### Extra Non-reference File Format #####
-For known TE sequences that are not included in the reference genome, a tab-delimited file can be provided to SQuIRE to incorporate the non-reference TEs into the analysis. This file can be inputted into the Map and Clean steps with the `--extra` parameter.
-
-The following information should be included in the file:
-  1. **Chromosome or Plasmid Identification** 
-    * SQuIRE will add an identifier with an underscore "\_" and the insertion type to distinguish the annotation from the reference genome.
-  2. **Insertion Start**
-    * 0-based numerical start location of the non-reference repeat
-  3. **Insertion End**
-    * 0-based numerical end location.  For chromosome insertions, will only be one base different from Insertion Start
-  4. **Strand**
-    * \+ or - Orientation of 'sense' strand of TE annotation
-  5. **TE classification**
-    * Provide TE Subfamily, Family and Order, separated by colons ":"
-  6. **Insertion Type**
-    * Must be one of: polymorphic insertion, novel insertion, plasmid, or transgene
-  7. **Left-Flank Sequence**
-    * Flanking sequence before the TE insertion
-  8. **Right-Flank Sequence**
-    * Flanking sequence after the TE insertion
-  9. **TE Sequence**
-    * non-reference TE sequence
-
-##### Example File #####
-![alt text](images/Non_ref_example.jpg "Example extra file")
 
 
 #### squire Clean ####
@@ -211,6 +188,31 @@ The following information should be included in the file:
 
 
 
+#### Non-reference File Format ####
+For known TE sequences that are not included in the reference genome, a tab-delimited file can be provided to SQuIRE to incorporate the non-reference TEs into the analysis. This file can be inputted into the Map and Clean steps with the `--extra` parameter.
+
+The following information should be included in the file:
+  1. **Chromosome or Plasmid Identification** 
+    * SQuIRE will add an identifier with an underscore "\_" and the insertion type to distinguish the annotation from the reference genome.
+  2. **Insertion Start**
+    * 0-based numerical start location of the non-reference repeat
+  3. **Insertion End**
+    * 0-based numerical end location.  For chromosome insertions, will only be one base different from Insertion Start
+  4. **Strand**
+    * \+ or - Orientation of 'sense' strand of TE annotation
+  5. **TE classification**
+    * Provide TE Subfamily, Family and Order, separated by colons ":"
+  6. **Insertion Type**
+    * Must be one of: polymorphic insertion, novel insertion, plasmid, or transgene
+  7. **Left-Flank Sequence**
+    * Flanking sequence before the TE insertion
+  8. **Right-Flank Sequence**
+    * Flanking sequence after the TE insertion
+  9. **TE Sequence**
+    * non-reference TE sequence
+
+##### Example File #####
+![alt text](images/Non_ref_example.jpg "Example extra file")
 
 
 ### Quantification Stage ###
