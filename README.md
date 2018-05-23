@@ -17,22 +17,17 @@
 
 ## Installation ##
 
-##### Virtual Environments ####
+We recommend using [Conda](https://conda.io/docs/) for SQuIRE installation.
 
-SQuIRE works best in a virtual environment.  We recommend using Conda to set up the SQuIRE environment.
-
-Conda is a simple tool that both installs and stores variables and modules in Python environments for repeated use.  
-
-First, check if miniconda is already installed
-   * `conda`
+Conda is a package manager that installs and runs packages and their dependencies.  Conda also creates virtual environments and allows users to switch between those environments. The instructions below installs Conda and creates a virtual environment in which to install software required by SQuIRE. Following these instructions ensures that SQuIRE has the correct software versions and dependencies and prevents software conflicts.
 
 1. Download Miniconda from https://conda.io/miniconda.html
 
-    * `wget -c https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh`
+    * `wget -c https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh`
     * Documentation will appear as the software downloads
 
 2. Execute the installer and add to PATH in .bashrc
-    * `bash Miniconda2-latest-Linux-x86_64.sh`
+    * `bash Miniconda3-latest-Linux-x86_64.sh`
     * Press ENTER key to review the Miniconda license
     * Type `yes` to approve the license terms
     * Pres ENTER key to confirm install locatino (or enter a preferred location)
@@ -46,26 +41,31 @@ First, check if miniconda is already installed
     * `exec $SHELL`
 
 5. Create new virtual environment
-    * `conda create --name squire --override-channels -c iuc -c bioconda -c conda-forge -c defaults -c r python=2.7.9 bioconductor-deseq2=1.16.1 r-base=3.4.1 r-pheatmap bioconductor-vsn bioconductor-biocparallel=1.12.0 r-ggrepel  star=2.5.3a  bedtools=2.25.0 samtools=1.1 stringtie=1.3.3 igvtools=2.3.93  ucsc-genepredtobed    ucsc-genepredtogtf  ucsc-bedgraphtobigwig r-hexbin `
+    * `conda create --name squire --override-channels -c iuc -c bioconda -c conda-forge -c defaults -c r python=2.7.13 bioconductor-deseq2=1.16.1 r-base=3.4.1 r-pheatmap bioconductor-vsn bioconductor-biocparallel=1.12.0 r-ggrepel  star=2.5.3a  bedtools=2.25.0 samtools=1.1 stringtie=1.3.3 igvtools=2.3.93  ucsc-genepredtobed    ucsc-genepredtogtf  ucsc-bedgraphtobigwig r-hexbin git=2.11.1`
 
     * Type `y` to proceed.
+6. Activate the virtual environment
 
-5. Install SQuIRE in the virtual environment
-    * `pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple SQuIRE`
+    * `source activate squire`  
+    * **Enter this command each time you wish to use the SQuIRE pipeline**
+    * The conda installation message may instruct the use of 'conda activate squire'. However, this is a newer and less stable usage than "source activate squire", which we recommend.
 
-6. **Activate the virtual environment each time you the SQuIRE pipeline**
+7. Install SQuIRE in the virtual environment
+    * `git clone https://github.com/wyang17/SQuIRE; cd SQuIRE; pip install -e .`
+    * The `-e` parameter for "pip install" automatially affects the current SQuIRE installation, so that there is no need to re-install SQuIRE with a new version.
+    * To update SQuIRE, go to the SQuIRE folder and enter:
+      *  `git pull`
 
-    * `source activate squire`
+### Notes ###
 
-
-SQuIRE was written and tested with the following specific versions of software:
+_*SQuIRE was written and tested with the following specific versions of software:_*
 * `STAR 2.5.3a`
-* `bedtools 2.25.0`
+* `bedtools 2.27.0`
 * `samtools 1.1`
 * `stringtie 1.3.3b`
 * `DESeq2 1.16.1`
 * `R 3.4.1`
-* `Python 2.7.9`
+* `Python 2.7`
 
 _*If installing these software with conda is unsuccessful, we recommend installing these versions with squire Build to ensure compatibility with SQuIRE.*_
   * [squire Build:](#squire-build)
@@ -73,11 +73,13 @@ _*If installing these software with conda is unsuccessful, we recommend installi
 
 
 
-#### Pipeline Steps ####
+
+## Pipeline Overview ##
+
 
 <img align="center" width="825" height="600" src="images/overview_squire.png">
 
-Preparation Stage
+*Preparation Stage*
 1)    [Fetch:](#squire-fetch)
                         Downloads input files from RefGene and generates STAR index
                         Only needs to be done once initially to acquire genomic input files or if a new build is desired.
@@ -85,7 +87,7 @@ Preparation Stage
 2)    [Clean:](#squire-clean)
                         Filters Repeatmasker file for Repeats of interest, collapses overlapping repeats, and returns as BED file.
 
-Quantification Stage
+*Quantification Stage*
 
 1)    [Map:](#squire-map)
                         Aligns RNAseq data
@@ -94,12 +96,12 @@ Quantification Stage
                         Quantifies RNAseq reads aligning to TEs
 
 
-Analysis Stage
+*Analysis Stage*
 
 1)    [Call:](#squire-call)
                         Compiles and outputs differential expression from multiple alignments
 
-Follow-up Stage
+*Follow-up Stage*
 1)    [Draw:](#squire-draw)
                         Creates BEDgraphs from RNAseq data
 
@@ -107,7 +109,7 @@ Follow-up Stage
                         Reports individual transposable element sequences
 
 
-
+An example pipeline with sample scripts is described [here](#example-pipeline).
 
 ## Arguments for each step ##
 
@@ -252,6 +254,8 @@ The following information is included in the file:
   - Quantifies RNAseq reads aligning to TEs and genes
   - Outputs counts for RefSeq genes and TEs at the locus and subfamily levels
 
+<img align="center" width="825" height="600" src="images/Count_overview.png">
+
   - **usage:** `squire Count [-h] [-m <folder>] [-c <folder>] [-o <folder>] [-t <folder>] [-f <folder>] -r <int> [-n <str>] [-b <build>] [-p <int>] [-s <int>] [-e EM] [-v]
 `
 
@@ -272,7 +276,7 @@ The following information is included in the file:
   -v, --verbosity|Want messages and runtime printed to stderr (optional; default=False)
 
 
-<img align="center" width="825" height="600" src="images/Count_overview.png">
+
 
 
 ### Analysis Stage ###
@@ -367,7 +371,7 @@ The [RNA-seqlopedia](https://rnaseq.uoregon.edu/) by Cresko Lab at University of
 You can gauge how much vmem to assign to each job based on the number of reads in your datasets.
 
 #### Can SQuIRE be used on ChIP or small RNA? ####
-Not right now, but to be addressed in the future.
+SQuIRE has not yet been tested with ChIP or small RNA sequencing data, so its compatibility has not yet been determined.
 
 
 ### Example Pipeline ###
