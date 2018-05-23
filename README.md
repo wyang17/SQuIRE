@@ -209,10 +209,10 @@ The following information should be included in the file:
   8. **Right-Flank Sequence**
     * Flanking sequence after the TE insertion
   9. **TE Sequence**
-    * non-reference TE sequence
+    * Non-reference TE sequence
 
 ##### Example File #####
-<img align="center" width="800" height="625" src="images/Non_ref_example.tif">
+<img align="center" width="800" height="625" src="images/Non_ref_example.jpg">
 
 ### Quantification Stage ###
 
