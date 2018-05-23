@@ -19,7 +19,7 @@
 
 We recommend using [Conda](https://conda.io/docs/) for SQuIRE installation.
 
-Conda is a package manager that installs and runs packages and their dependencies.  Conda also creates virtual environments and allows users to switch between those environments. The instructions below installs Conda and creates a virtual environment in which to install software required by SQuIRE. Following these instructions ensures that SQuIRE has the correct software versions and dependencies and prevents conflicts with other software 
+Conda is a package manager that installs and runs packages and their dependencies.  Conda also creates virtual environments and allows users to switch between those environments. The instructions below installs Conda and creates a virtual environment in which to install software required by SQuIRE. Following these instructions ensures that SQuIRE has the correct software versions and dependencies and prevents software conflicts.
 
 1. Download Miniconda from https://conda.io/miniconda.html
 
@@ -44,14 +44,15 @@ Conda is a package manager that installs and runs packages and their dependencie
     * `conda create --name squire --override-channels -c iuc -c bioconda -c conda-forge -c defaults -c r python=2.7.13 bioconductor-deseq2=1.16.1 r-base=3.4.1 r-pheatmap bioconductor-vsn bioconductor-biocparallel=1.12.0 r-ggrepel  star=2.5.3a  bedtools=2.25.0 samtools=1.1 stringtie=1.3.3 igvtools=2.3.93  ucsc-genepredtobed    ucsc-genepredtogtf  ucsc-bedgraphtobigwig r-hexbin git=2.11.1`
 
     * Type `y` to proceed.
-6. **Activate the virtual environment each time you the SQuIRE pipeline**
+6. Activate the virtual environment
 
-    * `source activate squire`    
+    * `source activate squire`  
+    * **Enter this command each time you wish to use the SQuIRE pipeline**
     * The conda installation message may instruct the use of 'conda activate squire'. However, this is a newer and less stable usage than "source activate squire", which we recommend.
 
 7. Install SQuIRE in the virtual environment
     * `git clone https://github.com/wyang17/SQuIRE; cd SQuIRE; pip install -e .`
-    * The `-e` parameter for pip install above ensures that updating SQuIRE will automatically change how SQuIRE runs, so that there is no need to re-install SQuIRE with a new version.
+    * The `-e` parameter for "pip install" automatially affects the current SQuIRE installation, so that there is no need to re-install SQuIRE with a new version.
     * To update SQuIRE, go to the SQuIRE folder and enter:
       *  `git pull`
 
