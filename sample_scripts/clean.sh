@@ -1,7 +1,7 @@
 ######################################################
 # Bash script clean.sh to run the Clean step of SQuIRE with input arguments
 # from input file arguments.sh
-# Last update: 2018_05_21
+# Last update: 2018_01_12
 # cpacyna
 ######################################################
 
@@ -30,17 +30,11 @@ echo 'Running Clean'
 
 if [ -z $repeatmasker_file ]
 then
-  if [ -z $non_reference ]; then
-    squire Clean --build $build --fetch_folder $fetch_folder --clean_folder $clean_folder $verbosity
-  else
-    squire Clean --build $build --fetch_folder $fetch_folder --clean_folder $clean_folder --extra $non_reference $verbosity
-  fi
-else
-  if [ -z $non_reference ]; then
-    squire Clean --rmsk $repeatmasker_file --fetch_folder $fetch_folder --clean_folder $clean_folder $verbosity
-  else
-    squire Clean --rmsk $repeatmasker_file --fetch_folder $fetch_folder --clean_folder $clean_folder --extra $non_reference $verbosity
-  fi
+  squire Clean --build $build --fetch_folder $fetch_folder --clean_folder $clean_folder --extra $extra $verbosity 
+
+elif
+then
+  squire Clean --rmsk $repeatmasker_file --fetch_folder $fetch_folder --clean_folder $clean_folder --extra $non_reference $verbosity 
 fi
 
 echo 'Clean Complete on' `date`

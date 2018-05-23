@@ -10,7 +10,7 @@
 #$ -l h_vmem=3G
 #$ -l h_fsize=500G
 #$ -m e
-#$ -M squire@email.com
+#$ -M cpacyna@jhu.edu
 
 
 #Load arguments
@@ -20,28 +20,28 @@ argument_file=$1
 
 
 # Loop through read 1 fastq files
-for samplename in ${samplenames//,/ }
+for samplename in $samplelist
 do
-for fastq in $fastq_folder/${samplename}*$r1suffix
+for fastq in $fastq_folder/${samplename}*r1suffix
 
 do
-  read1+=${fastq}
+  read1+=${fastq},
 done
 
 
   # Check if the data is paired or unpaired
   if [ $r2suffix != 'False' ]
   then
-  for fastq in $fastq_folder/${samplename}*$r2suffix
+  for fastq in $fastq_folder/${samplename}*r2uffix
     do
-    read2+=${fastq}
+    read2+=${fastq},
     done
 
     # Check if map has already been comleted
     if [[ `stat -c %s $map_folder/${samplename}.bam` < 1000 ]]
     then
       # Send paired map.sh job
-      qsub -cwd -V map.sh $read1 $samplename $argument_file $read2
+      qsub -cwd -V map.sh $read1 $read2 $samplename $argument_file
     fi
 
   else
@@ -49,8 +49,8 @@ done
     if [[ `stat -c %s $map_folder/$base.bam` < 1000 ]]
     then
       # Send unpaired map.sh job
-      read2=False
-      qsub -cwd -V map.sh $read1 $samplename $argument_file $read2
+      read2=empty
+      qsub -cwd -V map.sh $read1 $read2 $samplename $argument_file
     fi
   fi
 done
