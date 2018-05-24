@@ -1202,7 +1202,7 @@ class RepCalc(object):
 				counts_file.writelines(outline.out_line + "\n")
 			# self.same_strandcount="NA"
 			# self.opp_strandcount = "NA"
-			self.fpkm += outline.fpkm
+				self.fpkm += outline.fpkm
 		
 
 class squire_bed(object):
