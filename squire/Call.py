@@ -96,7 +96,7 @@ def get_groupfiles(group,gene_files,subF_files,TE_files,subfamily,count_folder):
         group_list=[get_basename(gene_file).replace("_refGenecounts","") for gene_file in (glob.glob(count_folder + "/" + group + "_refGenecounts.txt"))]
     return group_list  
 
-def create_count_dict(infilepath,count_dict,stringtie_list):
+def create_count_dict(infilepath,count_dict, fpkm_dict):
     name=get_basename(infilepath).replace("_refGenecounts","")
     with open(infilepath,'r') as infile:
         header = infile.readline().rstrip()
@@ -109,17 +109,18 @@ def create_count_dict(infilepath,count_dict,stringtie_list):
             gene_ID = line[3]
             fpkm=line[4]
             strand = line[5]
-            count = line[6]        
-            if (gene_ID,strand) in stringtie_list:
-                continue
+            count = line[6]
             if (gene_ID,strand) not in count_dict:
                 count_dict[(gene_ID,strand)] = {name:count}
+                fpkm_dict[(gene_ID,strand)] = {name:fpkm}
             else:
                 count_dict[(gene_ID,strand)][name]=count
+                fpkm_dict[(gene_ID,strand)][name]=fpkm
+
 
 #subF_file_header.writelines("Sample" + "\t" + "aligned_libsize" + "\t" + "Subfamily:Family:Class" + "\t" + "copies"  + "\t" + "EM_iteration" + "\t" + "uniq_counts" + "\t" + "tot_counts_preEM" + "\t" + "tot_counts_postEM" + "\t" + "tot_reads" + "\t" + "avg_conf"  + "\n")
 
-def create_TE_dict(infilepath,sample_count_dict,threshold):
+def create_TE_dict(infilepath,sample_count_dict,fpkm_dict,threshold):
     conf_dict={}
     count_dict={}
     with open(infilepath,'r') as infile:
@@ -139,20 +140,23 @@ def create_TE_dict(infilepath,sample_count_dict,threshold):
                 sample_count_dict[(TE_ID,strand)] = {sample:count}
                 conf_dict[(TE_ID,strand)] = [conf]
                 count_dict[(TE_ID,strand)] = [count]
+                fpkm_dict[(TE_ID,strand)] = {sample:fpkm}
             else:
                 sample_count_dict[(TE_ID,strand)][sample]=count
                 conf_dict[(TE_ID,strand)].append(conf)
                 count_dict[(TE_ID,strand)].append(count)
-    
+                fpkm_dict[(TE_ID,strand)][sample]=fpkm
     for TE_tuple,conf_list in conf_dict.iteritems():
         mean_conf=sum(conf_list)/len(conf_list)
         if mean_conf <= threshold:
             sample_count_dict.pop(TE_tuple, None)
+            fpkm_dict.pop(TE_tuple, None)
     for TE_tuple,TEcount_list in count_dict.iteritems():
         TEcount_list=TEcount_list = [int(i) for i in TEcount_list]
         mean_count=sum(TEcount_list)/len(TEcount_list)
         if mean_count <= 5:
-            sample_count_dict.pop(TE_tuple, None)        
+            sample_count_dict.pop(TE_tuple, None)    
+            fpkm_dict.pop(TE_tuple,None)    
 
 def create_subfamily_dict(infilepath,count_dict):
     TE_classes=["LTR","LINE","SINE","Retroposon","DNA","RC"] 
@@ -270,23 +274,24 @@ def main(**kwargs):
     group1_list=get_groupfiles(group1,gene_files,subF_files,TE_files,subfamily,count_folder)
     group2_list=get_groupfiles(group2,gene_files,subF_files,TE_files,subfamily,count_folder)
 
-    count_dict = {}
-    gene_list=set()
+    gene_count_dict = {}
+    gene_fpkm_dict={}
 
-    TE_dict={}
+    TE_count_dict={}
+    TE_fpkm_dict={}
     subF_combo = outfolder + "/" + projectname + "_subF_combo" + ".txt"
     TE_combo = outfolder + "/" + projectname + "_TE_combo" + ".txt"
     if subfamily: 
         for subF in subF_files:
             combinefiles(subF,subF_combo)       
-        create_subfamily_dict(subF_combo,TE_dict)
+        create_subfamily_dict(subF_combo,TE_count_dict,TE_fpkm_dict)
     else:
         for TE in TE_files:
             combinefiles(TE,TE_combo)        
-        create_TE_dict(TE_combo,TE_dict,threshold)
+        create_TE_dict(TE_combo,TE_count_dict,TE_fpkm_dict,threshold)
 
     for genefile in gene_files:        
-        create_count_dict(genefile,count_dict,gene_list)
+        create_count_dict(genefile,gene_count_dict,gene_fpkm_dict)
 
     coldata=outfolder + "/" + projectname + "_coldata.txt"
     with open(coldata,'w') as datafile:
@@ -297,15 +302,16 @@ def main(**kwargs):
             datafile.writelines(group2_sample + "\t" + condition2 + "\n")
     if subfamily:
         counttable = outfolder + "/" + projectname + "_gene_subF_counttable.txt"
+        fpkmttable = outfolder + "/" + projectname + "_gene_subF_fpkmtable.txt"
     else:
         counttable = outfolder + "/" + projectname + "_gene_TE_counttable.txt"        
-
+        fpkmtable = outfolder + "/" + projectname + "_gene_TE_fpkmtable.txt"  
     with open(counttable,'w') as DEfile:
         sample_list = group1_list + group2_list
         header_list = ["gene_id"] + sample_list
         header = "\t".join(header_list)
         DEfile.writelines(header + "\n")
-        for gene_key,sample_dict in count_dict.iteritems():
+        for gene_key,sample_dict in gene_count_dict.iteritems():
             if type(gene_key) is tuple:
                 gene=",".join(gene_key)
             else:
@@ -318,7 +324,7 @@ def main(**kwargs):
                     count_list.append("0")
             countline = "\t".join(count_list)
             DEfile.writelines(gene + "\t" + countline + "\n")
-        for TE_key,sample_dict in TE_dict.iteritems():
+        for TE_key,sample_dict in TE_count_dict.iteritems():
             TE_out=",".join(TE_key)
             count_list = []
             for sample in sample_list:
@@ -328,6 +334,35 @@ def main(**kwargs):
                     count_list.append("0")
             countline = "\t".join(count_list)
             DEfile.writelines(TE_out + "\t" + countline + "\n")
+
+    with open(fpkmtable,'w') as fpkmfile:
+        sample_list = group1_list + group2_list
+        header_list = ["gene_id"] + sample_list
+        header = "\t".join(header_list)
+        fpkmfile.writelines(header + "\n")
+        for gene_key,sample_dict in gene_fpkm_dict.iteritems():
+            if type(gene_key) is tuple:
+                gene=",".join(gene_key)
+            else:
+                gene=gene_key
+            fpkm_list = []
+            for sample in sample_list:
+                if sample in sample_dict:
+                    fpkm_list.append(str(sample_dict[sample]))
+                else:
+                    fpkm_list.append("0")
+            fpkmline = "\t".join(fpkm_list)
+            fpkmfile.writelines(gene + "\t" + fpkmline + "\n")
+        for TE_key,sample_dict in TE_fpkm_dict.iteritems():
+            TE_out=",".join(TE_key)
+            fpkm_list = []
+            for sample in sample_list:
+                if sample in sample_dict:
+                    fpkm_list.append(str(sample_dict[sample]))
+                else:
+                    fpkm_list.append("0")
+            fpkmline = "\t".join(fpkm_list)
+            fpkmfile.writelines(TE_out + "\t" + fpkmline + "\n")
 
     prefilter = True
     if not table_only:

@@ -122,7 +122,7 @@ def main():
     parser6.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
     parser6.add_argument("-N","--projectname", help = "Basename for project, default='SQuIRE'",type = str, metavar = "<str>",default="SQuIRE")
     parser6.add_argument("-f","--output_format", help = "Output figures as html or pdf", type = str, metavar = "<str>",default="html")
-    parser6.add_argument("-t","--table_only", help = "Output count table only, don't want to perform differential expression with DESeq2", action = "store_true", default = False)
+    parser6.add_argument("-t","--table_only", help = "Output count and fpkm tables only, don't want to perform differential expression with DESeq2", action = "store_true", default = False)
     parser6.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
 
     parser6.set_defaults(func=s6.main)
