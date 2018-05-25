@@ -309,6 +309,10 @@ def main(**kwargs):
     else:
         counttable = outfolder + "/" + projectname + "_gene_TE_counttable.txt"        
         fpkmtable = outfolder + "/" + projectname + "_gene_TE_fpkmtable.txt"  
+
+    if verbosity:
+        print("Creating count table file"+ str(datetime.now()) + "\n",file = sys.stderr)     
+
     with open(counttable,'w') as DEfile:
         sample_list = group1_list + group2_list
         header_list = ["gene_id"] + sample_list
@@ -338,6 +342,9 @@ def main(**kwargs):
             countline = "\t".join(count_list)
             DEfile.writelines(TE_out + "\t" + countline + "\n")
 
+    if verbosity:
+        print("Creating fpkm table file"+ str(datetime.now()) + "\n",file = sys.stderr)     
+        
     with open(fpkmtable,'w') as fpkmfile:
         sample_list = group1_list + group2_list
         header_list = ["gene_id"] + sample_list
@@ -369,6 +376,8 @@ def main(**kwargs):
 
     prefilter = True
     if not table_only:
+    if verbosity:
+        print("Performing differential expression with DESeq2"+ str(datetime.now()) + "\n",file = sys.stderr)        
         create_rscript(counttable,coldata,outfolder,output_format,projectname,verbosity,str(pthreads),prefilter,condition1,condition2,label_no)
 
     ####### STOP TIMING SCRIPT #######################
