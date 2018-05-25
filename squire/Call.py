@@ -132,6 +132,7 @@ def create_TE_dict(infilepath,sample_count_dict,fpkm_dict,threshold):
                 continue
             TE_ID = line[3]
             strand = line[5]
+            fpkm = line[4]
             milliDiv = int(line[12])
             count = str(int(float(line[15])))
             conf = float(line[17])
@@ -158,13 +159,14 @@ def create_TE_dict(infilepath,sample_count_dict,fpkm_dict,threshold):
             sample_count_dict.pop(TE_tuple, None)    
             fpkm_dict.pop(TE_tuple,None)    
 
-def create_subfamily_dict(infilepath,count_dict):
+def create_subfamily_dict(infilepath,count_dict,fpkm_dict):
     TE_classes=["LTR","LINE","SINE","Retroposon","DNA","RC"] 
     with open(infilepath,'r') as infile:
         for line in infile:
             line = line.rstrip()
             line = line.split("\t")
             taxo = line[2]
+            fpkm = line[4]
             count=line[6]                  
             if any(x in taxo for x in TE_classes):                
                 if count=="tot_counts":
@@ -174,8 +176,9 @@ def create_subfamily_dict(infilepath,count_dict):
                 sample = line[0]
                 if taxo not in count_dict:
                     count_dict[taxo] = {sample:count}
+                    fpkm_dict[taxo] = {sample:fpkm}
                 else:   
-                    count_dict[taxo][sample]=count
+                    fpkm_dict[taxo][sample]=fpkm
 
 def combinefiles(infile,catfile):
     with open(catfile, 'a') as outFile:
@@ -229,7 +232,7 @@ def main(**kwargs):
         parser.add_argument("-p","--pthreads", help = "Launch <int> parallel threads(optional; default='1')", type = int, metavar = "<int>", default=1)
         parser.add_argument("-N","--projectname", help = "Basename for project, default='SQuIRE'",type = str, metavar = "<str>",default="SQuIRE")
         parser.add_argument("-f","--output_format", help = "Output figures as html or pdf", type = str, metavar = "<str>",default="html")
-        parser.add_argument("-t","--table_only", help = "Output count table only, don't want to perform differential expression with DESeq2", action = "store_true", default = False)
+        parser.add_argument("-t","--table_only", help = "Output count and fpkm tables only, don't want to perform differential expression with DESeq2", action = "store_true", default = False)
         #parser.add_argument("-c","--cluster", help = "Want to cluster samples by gene and TE expression", action = "store_true", default = False)
         parser.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
 
@@ -293,7 +296,7 @@ def main(**kwargs):
     for genefile in gene_files:        
         create_count_dict(genefile,gene_count_dict,gene_fpkm_dict)
 
-    coldata=outfolder + "/" + projectname + "_coldata.txt"
+    coldata=outfolder + "/" + projectname + "_coldata.txt"  
     with open(coldata,'w') as datafile:
         datafile.writelines("sample" + "\t" + "condition" + "\n")
         for group1_sample in group1_list:
