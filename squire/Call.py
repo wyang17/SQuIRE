@@ -305,7 +305,7 @@ def main(**kwargs):
             datafile.writelines(group2_sample + "\t" + condition2 + "\n")
     if subfamily:
         counttable = outfolder + "/" + projectname + "_gene_subF_counttable.txt"
-        fpkmttable = outfolder + "/" + projectname + "_gene_subF_fpkmtable.txt"
+        fpkmtable = outfolder + "/" + projectname + "_gene_subF_fpkmtable.txt"
     else:
         counttable = outfolder + "/" + projectname + "_gene_TE_counttable.txt"        
         fpkmtable = outfolder + "/" + projectname + "_gene_TE_fpkmtable.txt"  
@@ -344,7 +344,7 @@ def main(**kwargs):
 
     if verbosity:
         print("Creating fpkm table file"+ str(datetime.now()) + "\n",file = sys.stderr)     
-            
+
     with open(fpkmtable,'w') as fpkmfile:
         sample_list = group1_list + group2_list
         header_list = ["gene_id"] + sample_list
