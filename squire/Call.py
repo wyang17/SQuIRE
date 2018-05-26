@@ -364,7 +364,10 @@ def main(**kwargs):
             fpkmline = "\t".join(fpkm_list)
             fpkmfile.writelines(gene + "\t" + fpkmline + "\n")
         for TE_key,sample_dict in TE_fpkm_dict.iteritems():
-            TE_out=",".join(TE_key)
+            if not subfamily:
+                TE_out=",".join(TE_key)
+            else:
+                TE_out=TE_key
             fpkm_list = []
             for sample in sample_list:
                 if sample in sample_dict:
