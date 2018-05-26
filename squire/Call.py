@@ -120,7 +120,9 @@ def create_count_dict(infilepath,count_dict, fpkm_dict):
 
 #subF_file_header.writelines("Sample" + "\t" + "aligned_libsize" + "\t" + "Subfamily:Family:Class" + "\t" + "copies"  + "\t" + "EM_iteration" + "\t" + "uniq_counts" + "\t" + "tot_counts_preEM" + "\t" + "tot_counts_postEM" + "\t" + "tot_reads" + "\t" + "avg_conf"  + "\n")
 
-def create_TE_dict(infilepath,conf_dict,count_dict,sample_count_dict,fpkm_dict,threshold):
+def create_TE_dict(infilepath,sample_count_dict,fpkm_dict,threshold):
+    conf_dict={}
+    count_dict={}
     with open(infilepath,'r') as infile:
         header = infile.readline().rstrip()
         for line in infile:            
@@ -283,13 +285,13 @@ def main(**kwargs):
     subF_combo = outfolder + "/" + projectname + "_subF_combo" + ".txt"
     TE_combo = outfolder + "/" + projectname + "_TE_combo" + ".txt"
     if subfamily: 
-        for subF in subF_files: 
-            create_subfamily_dict(subF_combo,TE_count_dict,TE_fpkm_dict)
+        for subF in subF_files:
+            combinefiles(subF,subF_combo)       
+        create_subfamily_dict(subF_combo,TE_count_dict,TE_fpkm_dict)
     else:
-        conf_dict={}
-        count_dict={}
         for TE in TE_files:
-            create_TE_dict(TE_combo,conf_dict,count_dict,TE_count_dict,TE_fpkm_dict,threshold)
+            combinefiles(TE,TE_combo)        
+        create_TE_dict(TE_combo,TE_count_dict,TE_fpkm_dict,threshold)
 
     for genefile in gene_files:        
         create_count_dict(genefile,gene_count_dict,gene_fpkm_dict)
