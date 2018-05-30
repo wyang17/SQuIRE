@@ -2,8 +2,6 @@
 
 <img align="right" width="260" height="260" src="images/squire.png">
 
-**SQuIRE** is a tool for finding and analyzing unique repeat regions within a family of repeats.
-
 [Installation](#installation)
 
 [SQuIRE Pipeline Overview](#pipeline)
