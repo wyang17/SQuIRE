@@ -39,18 +39,21 @@ Conda is a package manager that installs and runs packages and their dependencie
     * `exec $SHELL`
 
 5. Create new virtual environment
-    * `conda create --name squire --override-channels -c iuc -c bioconda -c conda-forge -c defaults -c r python=2.7.13 bioconductor-deseq2=1.16.1 r-base=3.4.1 r-pheatmap bioconductor-vsn bioconductor-biocparallel=1.12.0 r-ggrepel  star=2.5.3a  bedtools=2.25.0 samtools=1.1 stringtie=1.3.3 igvtools=2.3.93  ucsc-genepredtobed    ucsc-genepredtogtf  ucsc-bedgraphtobigwig r-hexbin git=2.11.1`
+    * `conda create --name squire --override-channels -c iuc -c bioconda -c conda-forge -c defaults -c r python=2.7.13 bioconductor-deseq2=1.16.1 r-base=3.4.1 r-pheatmap bioconductor-vsn bioconductor-biocparallel=1.12.0 r-ggrepel  star=2.5.3a  bedtools=2.25.0 samtools=1.1 stringtie=1.3.3 igvtools=2.3.93  ucsc-genepredtobed    ucsc-genepredtogtf  ucsc-bedgraphtobigwig r-hexbin `
 
     * Type `y` to proceed.
 6. Activate the virtual environment
-
     * `source activate squire`  
     * **Enter this command each time you wish to use the SQuIRE pipeline**
     * The conda installation message may instruct the use of 'conda activate squire'. However, this is a newer and less stable usage than "source activate squire", which we recommend.
 
-7. Install SQuIRE in the virtual environment
-    * `git clone https://github.com/wyang17/SQuIRE; cd SQuIRE; pip install -e .`
-    * The `-e` parameter for "pip install" automatially affects the current SQuIRE installation, so that there is no need to re-install SQuIRE with a new version.
+7. Install SQuIRE in the virtual environment with git
+    * Determine if git is installed:
+      * `git --version`
+      * If an error occurs, install git with conda install --override-channels -c iuc -c bioconda -c conda-forge -c defaults git=2.11.1
+    * Copy the SQuIRE software from the Git repository onto your local installation:
+      * `git clone https://github.com/wyang17/SQuIRE; cd SQuIRE; pip install -e .`
+      * The `-e` parameter for "pip install" automatially affects the current SQuIRE installation, so that there is no need to re-install SQuIRE with a new version.
     * To update SQuIRE, go to the SQuIRE folder and enter:
       *  `git pull`
 
@@ -70,10 +73,7 @@ _*If installing these software with conda is unsuccessful, we recommend installi
       * `squire Build -s all`
 
 
-
-
 ## Pipeline Overview ##
-
 
 <img align="center" width="825" height="600" src="images/overview_squire.png">
 
@@ -271,22 +271,16 @@ The following information should be included in the file:
   -e <EM>, --EM <EM> | Run estimation-maximization on TE counts given numberof times (optional, specify 0 if no EM desired; default=auto)
   -v, --verbosity|Want messages and runtime printed to stderr (optional; default=False)
 
-
-
-
-
 ### Analysis Stage ###
 
 #### squire Call ####
 
 <img align="right" width="150" height="150" src="images/call.png">
 
-
   - Performs differential expression analysis on TEs and genes
   - Outputs DEseq2 output and plots
 
   - **usage** squire Call [-h] -1 <str1,str2> or <*str*> -2 <str1,str2> or <*str*> -A  <str> -B <str> [-o <folder>] [-s] [-p <int>] [-N <str>] [-f <str>] [-v]
-
 
   | Arguments |   |
   | --- | --- |
@@ -301,8 +295,6 @@ The following information should be included in the file:
   -N <str>, --projectname <str>| Basename for project
   -f <str>, --output_format <str>|Output figures as html or pdf
   -v, --verbosity|Want messages and runtime printed to stderr (optional; default=False)
-
-
 
 ### Follow-up Stage ###
 
@@ -329,10 +321,6 @@ The following information should be included in the file:
   -v, --verbosity|Want messages and runtime printed to stderr (optional; default=False)
 
 
-
-
-
-
 #### squire Seek ####
 
 <img align="right" width="150" height="150" src="images/seek.png">
@@ -352,12 +340,6 @@ The following information should be included in the file:
 | -g, --genome | Genome build's fasta chromosomes - .fa file or .chromFa folder |
 | -v, --verbosity | Print messages and runtime records to stderr. Optional; default = False |
 
-
-
-### Argument Organization ###
-SQuIRE can save an entire project's arguments in one input script that stores.  The variables can be saved to keep track of the parameters used in each project.
-
-
 ## FAQs ##
 
 #### How do I know if my data is stranded or not? ####
@@ -368,7 +350,6 @@ You can gauge how much vmem to assign to each job based on the number of reads i
 
 #### Can SQuIRE be used on ChIP or small RNA? ####
 SQuIRE has not yet been tested with ChIP or small RNA sequencing data, so its compatibility has not yet been determined.
-
 
 ### Example Pipeline ###
 INSTRUCTIONS

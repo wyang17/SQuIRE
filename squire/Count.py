@@ -99,7 +99,6 @@ def getlibsize(logfile, infile,multi_bed,uniq_bed,paired_end,debug):
 		linecountcommandlist = ["samtools", "view", infile, "|", "cut", "-f1", "|", "sort", "-k1,1", "|" , "uniq","|", "wc -l", ">", count_temp]
 		linecountcommand = " ".join(linecountcommandlist)
 		sp.check_call(["/bin/sh","-c",linecountcommand])
-
 		with open(count_temp, 'r') as count_file:
 			first_line = count_file.readline()
 			first_line_split = first_line.split()
@@ -337,7 +336,6 @@ def find_properpair(paired_bam, proper,nonproper):
 	samtoolscommand_list = ["samtools","view","-bf2", "-o", proper, paired_bam]
 	samtoolscommand = " ".join(samtoolscommand_list)
 	sp.check_call(["/bin/sh", "-c", samtoolscommand])
-
 	samtoolscommand_list = ["samtools","view","-bF2", "-o", nonproper, paired_bam]
 	samtoolscommand = " ".join(samtoolscommand_list)
 	sp.check_call(["/bin/sh", "-c", samtoolscommand])
@@ -347,12 +345,9 @@ def split_paired(paired_bed, paired_bed1, paired_bed2,debug):
 	awkcommand_list = ["awk","'$4 ~ v'","v='/1'", paired_bed,">", paired_bed1]
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh", "-c", awkcommand])
-
 	awkcommand_list = ["awk","'$4 ~ v'","v='/2'", paired_bed,">", paired_bed2]
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh", "-c", awkcommand])
-
-
 	if not debug:
 		os.unlink(paired_bed)
 
@@ -383,7 +378,6 @@ def reduce_reads(read_file,new_readfile,debug):
 			prev.line_split[15]  = prev_TE_ID
 			prev.line = "\t".join(prev.line_split)
 			outfile.writelines(prev.line + "\n")
-
 	if not debug:
 		os.unlink(read_file)
 
@@ -395,41 +389,31 @@ def get_coords(file_in,read_end,strandedness, file_out,debug):
 	temp_file_plus = file_in + "_temp_plus"
 	temp_file_minus = file_in + "_temp_minus"
 	temp_file_new = file_in + "_temp_new"
-
 	coords_commandlist = ["awk", "-v", "OFS='\\t'","""'{print $1 OFS $19-$14+$2 OFS $19-$14+$3 OFS $4 OFS $5 OFS "orig_"$6 OFS $16 OFS $23}'""",file_in, ">", temp_file_coords]
 	coords_command = " ".join(coords_commandlist)
 	sp.check_call(["/bin/sh","-c",coords_command])
-
 	remove_underscore_command_list = ["awk","-v", "OFS='\\t'", """'{ gsub(/_polymorphism/,"",$1); gsub(/_novel/,"",$1);print $0 }'""", temp_file_coords, ">", temp_file_chr]
 	remove_underscore_command = " ".join(remove_underscore_command_list)
 	sp.check_call(["/bin/sh","-c",remove_underscore_command])
-
 	if not debug:
 		os.unlink(temp_file_coords)
 		os.unlink(file_in)
-
 	if strandedness==0:
 		strandedness=1 #change strandedness just so paired-end reads are switched to the same strand
 	if strandedness == read_end: #switch strand
-
 		plus_command_list = ["awk","-v", "OFS='\\t'", """'{ gsub(/orig_\+/,"new_-",$6); print $0 }'""", temp_file_chr, ">", temp_file_plus]
 		plus_command = " ".join(plus_command_list)
 		sp.check_call(["/bin/sh","-c",plus_command])
-
 		minus_command_list = ["awk", "-v", "OFS='\\t'","""'{ gsub(/orig_\-/,"new_+",$6); print $0 }'""", temp_file_plus, ">", temp_file_minus]
 		minus_command = " ".join(minus_command_list)
 		sp.check_call(["/bin/sh","-c",minus_command])
-
 		new_command_list = ["awk", "-v", "OFS='\\t'","""'{ gsub("new_","",$6); print $0 }'""", temp_file_minus, ">", file_out]
 		new_command = " ".join(new_command_list)
 		sp.check_call(["/bin/sh","-c",new_command])
-
-
 		if not debug:
 			os.unlink(temp_file_chr)
 			os.unlink(temp_file_plus)
 			os.unlink(temp_file_minus)
-
 	else: #keep strand
 		new_command_list = ["awk","-v", "OFS='\\t'", """'{ gsub("orig_","",$6); print $0 }'""", temp_file_chr, ">", file_out]
 		new_command = " ".join(new_command_list)
@@ -437,49 +421,37 @@ def get_coords(file_in,read_end,strandedness, file_out,debug):
 		if not debug:
 			os.unlink(temp_file_chr)
 
-
-
 def fix_paired(file1,file2,fixed_file1,fixed_file2, debug): #remove "/1" or "/2"
 	remove1_command_list = ["sed", """'s@/1@@g'""", file1, ">", fixed_file1]
 	remove1_command = " ".join(remove1_command_list)
 	sp.check_call(["/bin/sh","-c",remove1_command])
-
 	remove2_command_list = ["sed", """'s@/2@@g'""", file2, ">", fixed_file2]
 	remove2_command = " ".join(remove2_command_list)
 	sp.check_call(["/bin/sh","-c",remove2_command])
-
 	if not debug:
 		os.unlink(file1)
 		os.unlink(file2)
 
 def find_uniq(combined_tempfile, first_tempfile,unique_tempfile, multi_tempfile,debug):
-
 	##### SEPARATE UNIQUELY ALIGNED AND MULTI-ALIGNED READS ########
-
 	dupe_tempfile = combined_tempfile + "_dupe"
 	dupe_tempfile1 = combined_tempfile + "_dupe1"
-
 	dupe_command_list = ["awk","'!a[$4]++'", combined_tempfile, ">", first_tempfile] #skips lines if the read has already appeared in the file
 	dupe_command = " ".join(dupe_command_list)
 	sp.check_call(["/bin/sh", "-c", dupe_command])
-
 	awkcommand_list = ["awk", """'FNR==NR{a[$0]++;next}!a[$0]'""", first_tempfile, combined_tempfile,  ">", dupe_tempfile] #writes lines in combined_tempfile that are not in unique_tempfile2 -> duplicates
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
-
 	awkcommand_list = ["awk", """'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""", dupe_tempfile, first_tempfile,  ">", unique_tempfile] #writes lines where read is in unique2 but not multi file -> truly unique
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
-
 	awkcommand_list = ["awk", """'FNR==NR{a[$4]++;next}a[$4]{print $0}'""", dupe_tempfile, first_tempfile,  ">", dupe_tempfile1] #writes lines in read is in unique2 and multi file -> gets first appearance of multi-aligned reads
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
 	#delete unneeded tempfiles
-
 	catcommand_list = ["cat", dupe_tempfile, dupe_tempfile1, ">", multi_tempfile ] #combines multi_aligned reads
 	catcommand = " ".join(catcommand_list)
 	sp.check_call(["/bin/sh","-c",catcommand])
-
 	if not debug:
 		os.unlink(dupe_tempfile)
 		os.unlink(dupe_tempfile1)
@@ -503,30 +475,23 @@ def match_reads(R1, R2, strandedness, matched_file,unmatched_file1,unmatched_fil
 	matched_file_10k_v2 = matched_file + "_10k_v2"
 	unmatched_file1_v1 = unmatched_file1 + "_v1"
 	unmatched_file2_v1 = unmatched_file2 + "_v1"
-
-
 	roundcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $2/10000}'""", """OFMT='%.f'""", R1, ">", rounded_1_v1]
 	roundcommand=" ".join(roundcommand_list)
 	sp.check_call(["/bin/sh","-c",roundcommand])
-
 	roundcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $2/10000}'""", """OFMT='%.f'""", R2, ">", rounded_2_v1]
 	roundcommand=" ".join(roundcommand_list)
 	sp.check_call(["/bin/sh","-c",roundcommand])
-
 	#create new read to join on that is read/chro
 	newreadcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $4 "/" $1 "/" $11 "/" $6}'""", rounded_1_v1,"|", "sort -k12", ">", newread_1_v1]
 	newreadcommand=" ".join(newreadcommand_list)
 	sp.check_call(["/bin/sh","-c",newreadcommand])
-
 	newreadcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $4 "/" $1 "/" $11 "/" $6}'""",  rounded_2_v1,"|", "sort -k12", ">", newread_2_v1]
 	newreadcommand=" ".join(newreadcommand_list)
 	sp.check_call(["/bin/sh","-c",newreadcommand])
-
 	#use join not awk because awk only takes 1st hit with shared value to find match
 	joincommand_list = ["join", "-j", "12", "-t", "$'\\t'", "-o", "1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,2.10", newread_1_v1, newread_2_v1, ">" , matched_file_10k_v1]
 	joincommand=" ".join(joincommand_list)
 	sp.check_call(["/bin/sh","-c",joincommand])
-
 	pos_strand_2 =  """($3 -$12 <= 500 && $3 -$12 >= 0 && $2 >= $12 && $6=="+" && $5!=1000 && $15!=1000)""" #insert size < 500 & end of read1 will be after beginning of read 2 & start of read1 will be after beginning of read2
 	minus_strand_2 = """($13 -  $2 <= 500 && $13 -  $2 >= 0 && $12 >= $2 && $6=="-" && $5!=1000 && $15!=1000)""" #insert size < 500 & end of read2 will be after beginning of read 1 & start of read2 will be after beginning of read1
 	poly_pos_2 = """($3 -$12 <= 500 && $3 -$12 >= 0 && $2 >= $12 && $6=="+" && $5==1000 && $15 !=1000) || ($13 -  $2 <= 500 && $13-  $2 >= 0 && $12 >= $2 && $6=="+" && $5!=1000 && $15==1000)||($3 -$12 <= 500 && $3 -$12 >= 0 && $2 >= $12 && $6=="+" && $5==1000 && $15==1000)"""
@@ -536,7 +501,6 @@ def match_reads(R1, R2, strandedness, matched_file,unmatched_file1,unmatched_fil
 	poly_minus_1 = """($3 -$12 <= 500 && $3 -$12 >= 0 && $2 >= $12 && $6=="-" && $5==1000 && $15 !=1000) || ($13 -  $2 <= 500 && $13 -  $2 >= 0 && $12 >= $2 && $6=="-" && $5!=1000 && $15==1000)||($3 -$12 <= 500 && $3 -$12 >= 0 && $2 >= $12 && $6=="-" && $5==1000 && $15==1000)"""
 	poly_pos_1 =  """($3 -$12 <= 500 && $3 -$12 >= 0 && $2 >= $12 && $6=="+" && $5!=1000 && $15 ==1000) || ($13 -  $2 <= 500 && $13 -  $2 >= 0 && $12 >= $2 && $6=="+" && $5==1000 && $15!=1000)||($13 -  $2 <= 500 && $13 -  $2 >= 0 && $12 >= $2 && $6=="+"  && $5==1000 && $15==1000)"""#if plus strand: pos_strand 2 before insert, minus_strand 2 after; if minus strand: minus strand_2 before insert, pos strand 2 after
 	unstranded = """($13 -  $2 <= 500 && $13 -  $2 >= 0 && $12 >= $2 ) || ($3 -$12 <= 500 && $3 -$12 >= 0 && $2 >= $12)"""
-
 	awk_inout_v1 = [matched_file_10k_v1,  ">",  matched_file_v1]
 	if strandedness==1: #first strand RNA synthesis (Illumina, dUTP, NSR, NNSR)
 		awkcommand_list2 = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'","""'(""",pos_strand_2,"""||""",minus_strand_2,"||",poly_pos_2,"||",poly_minus_2,"){print $0}'"""]  #find pairs that match TE_ID and strand
@@ -550,36 +514,28 @@ def match_reads(R1, R2, strandedness, matched_file,unmatched_file1,unmatched_fil
 		awkcommand_list0 = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'","""'(""", unstranded,""") {print $0}'"""] #find pairs that match TE_ID and strand
 		awkcommand0 = " ".join(awkcommand_list0 + awk_inout_v1)
 		sp.check_call(["/bin/sh","-c",awkcommand0])
-
 	awkcommand_list = ["awk","-v", "OFS='\\t'","-v", "FS='\\t'", """'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""", matched_file_v1,R1,   ">", unmatched_file1_v1] #writes lines in read1 that is not in matched file -> unmatched
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
-
 	awkcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'","""'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""", matched_file_v1, R2,  ">", unmatched_file2_v1] #writes lines in read2 that is not in matched file -> unmatched
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
-
 	roundcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $2/100000}'""", """OFMT='%.f'""", unmatched_file1_v1, ">", rounded_1_v2]
 	roundcommand=" ".join(roundcommand_list)
 	sp.check_call(["/bin/sh","-c",roundcommand])
-
 	roundcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $2/100000}'""", """OFMT='%.f'""", unmatched_file2_v1, ">", rounded_2_v2]
 	roundcommand=" ".join(roundcommand_list)
 	sp.check_call(["/bin/sh","-c",roundcommand])
-
 	newreadcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $4 "/" $1 "/" $11 "/" $6}'""", rounded_1_v2,"|", "sort -k12", ">", newread_1_v2]
 	newreadcommand=" ".join(newreadcommand_list)
 	sp.check_call(["/bin/sh","-c",newreadcommand])
-
 	newreadcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $4 "/" $1 "/" $11 "/" $6}'""",  rounded_2_v2,"|", "sort -k12", ">", newread_2_v2]
 	newreadcommand=" ".join(newreadcommand_list)
 	sp.check_call(["/bin/sh","-c",newreadcommand])
-
 	#use join not awk because awk only takes 1st hit with shared value to find match
 	joincommand_list = ["join", "-j", "12", "-t", "$'\\t'", "-o", "1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,2.10", newread_1_v2, newread_2_v2, ">" , matched_file_10k_v2]
 	joincommand=" ".join(joincommand_list)
 	sp.check_call(["/bin/sh","-c",joincommand])
-
 	awk_inout_v2 = [matched_file_10k_v2,  ">",  matched_file_v2]
 	if strandedness==1:
 		awkcommand2 = " ".join(awkcommand_list2+ awk_inout_v2)
@@ -590,20 +546,15 @@ def match_reads(R1, R2, strandedness, matched_file,unmatched_file1,unmatched_fil
 	if strandedness==0:
 		awkcommand0 = " ".join(awkcommand_list0+ awk_inout_v2)
 		sp.check_call(["/bin/sh","-c",awkcommand0])
-
 	catcommand_list = ["cat", matched_file_v1, matched_file_v2, ">", matched_file ] #combines multi_aligned reads
 	catcommand = " ".join(catcommand_list)
 	sp.check_call(["/bin/sh","-c",catcommand])
-
-
 	awkcommand_list = ["awk","-v", "OFS='\\t'","-v", "FS='\\t'", """'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""", matched_file,R1,   ">", unmatched_file1] #writes lines in read1 that is not in matched file -> unmatched
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
-
 	awkcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'","""'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""", matched_file, R2,  ">", unmatched_file2] #writes lines in read2 that is not in matched file -> unmatched
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
-
 	if not debug:
 		os.unlink(rounded_1_v1)
 		os.unlink(rounded_2_v1)
@@ -626,8 +577,6 @@ def match_reads(R1, R2, strandedness, matched_file,unmatched_file1,unmatched_fil
 
 def merge_coords(paired_file,merged_paired,debug): #combine coordinates for paired reads
 	outfile = open(merged_paired,'w')
-	# line_dict = {}
-	# prev_ID = False
 	with open(paired_file,'r') as infile:
 		for line in infile:
 			line = line.rstrip()
@@ -661,26 +610,6 @@ def merge_coords(paired_file,merged_paired,debug): #combine coordinates for pair
 			insert_size=abs(int(new_end) - int(new_start))
 			new_line = "\t".join([chrom, new_start,new_end,read_ID,new_score,strand,new_TE_ID,new_proper,new_read,new_uniq])
 			outfile.writelines(new_line + "\n")
-		#   if not prev_ID:
-		#       prev_ID = read_ID
-		#       line_dict[insert_size]=[new_line]
-		#   elif read_ID == prev_ID: #if more than one match for read_ID
-		#       if insert_size in line_dict:
-		#           line_dict[insert_size].append(new_line)
-		#       else:
-		#           line_dict[insert_size]=[new_line]
-		#   else: #if new read ID
-		#       min_insert = min(line_dict.keys())
-		#       for min_line in line_dict[min_insert]:
-		#           outfile.writelines(min_line + "\n")
-		#       prev_ID=read_ID
-		#       line_dict={} #start new dictionary with new read_ID
-		#       line_dict[insert_size]=[new_line]
-		# #for last line
-		# min_insert = min(line_dict.keys())
-		# for min_line in line_dict[min_insert]:
-		#   outfile.writelines(min_line + "\n")
-
 	outfile.close()
 	infile.close()
 	if not debug:
@@ -692,11 +621,9 @@ def find_proper(single_bed,nonproper_bed, proper_bed,debug):
 	awkcommand_list = ["awk","'$8 ~ v'","v='nonproper'", single_bed,">", nonproper_bed]
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh", "-c", awkcommand])
-
 	awkcommand_list = ["awk", """'FNR==NR{a[$0]++;next}!a[$0]{print $0}'""", nonproper_bed, single_bed, ">", proper_bed] #writes lines that are in single_bed and not in nonproper bed (all proper alignments)
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
-
 	if not debug:
 		os.unlink(single_bed)
 
@@ -704,36 +631,29 @@ def remove_repeat_reads(paired_bed,unpaired_bed,new_unpaired_bed, debug): #remov
 	removecommandlist = ["awk", "-v", "OFS='\\t'","'FNR==NR{a[$4]++;next}!a[$4]{print $0}'",paired_bed, unpaired_bed, ">", new_unpaired_bed]
 	removecommand = " ".join(removecommandlist)
 	sp.check_call(["/bin/sh","-c",removecommand])
-
 	if not debug:
 		os.unlink(unpaired_bed)
 
 def find_paired_uniq(multi_tempfile,paired_uniq_tempfile,new_multi_tempfile, new_uniq_tempfile,debug):
-
 	##### Find reads which exclusively align as paired + uniq -> means one read is unique and the other is multi-aligned to nearby TEs
 	paired_uniq_tempfile_1 = paired_uniq_tempfile + "_1"
 	new_multi_tempfile_1 = new_multi_tempfile + "_0"
 	awkcommand_list = ["awk", """'$9=="paired" && $10 ~/uniq/'""", multi_tempfile,  ">", paired_uniq_tempfile_1] #writes lines labeled with "paired" and uniq
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
-
 	awkcommand_list = ["awk", """'FNR==NR{a[$0]++;next}!a[$0]{print $0}'""", paired_uniq_tempfile_1, multi_tempfile, ">", new_multi_tempfile_1] #writes lines that are not paired and uniq
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
-
 	awkcommand_list = ["awk", """'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""",  new_multi_tempfile_1, paired_uniq_tempfile_1,  ">", paired_uniq_tempfile] #writes lines in read is in unique2 and multi file -> gets first appearance of multi-aligned reads
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
-
 	awkcommand_list = ["awk", """'FNR==NR{a[$0]++;next}!a[$0]{print $0}'""", paired_uniq_tempfile, multi_tempfile, ">", new_multi_tempfile] #writes lines that are not paired and uniq
 	awkcommand = " ".join(awkcommand_list)
 	sp.check_call(["/bin/sh","-c",awkcommand])
-
 	new_multi_bed = open(new_multi_tempfile, 'a')
 	new_uniq_bed = open(new_uniq_tempfile, 'a')
 
 	def eval_paired_uniq(startlist,stoplist,beddict,uniqfile,multifile):
-
 		if len(beddict)==1: #if all alignments of read are to same TE_ID
 			TE_ID=beddict.keys()[0]
 			newbedline = beddict[TE_ID]
@@ -743,14 +663,12 @@ def find_paired_uniq(multi_tempfile,paired_uniq_tempfile,new_multi_tempfile, new
 		else:
 			for TE_ID, newbedline in beddict.iteritems():
 				newbedline.write_bedline(multifile)
-
 	paired_uniq_bed = open(paired_uniq_tempfile,'r')
 	paired_uniq_bed.seek(0)
 	prev_ID = False
 	bed_dict={}
 	start_list=[]
 	stop_list=[]
-
 	for line in paired_uniq_bed:
 		bed_line = bedline(line)
 		if not prev_ID: #if first line
@@ -769,7 +687,6 @@ def find_paired_uniq(multi_tempfile,paired_uniq_tempfile,new_multi_tempfile, new
 			bed_dict={bed_line.TE_ID:bed_line}
 			start_list = [int(bed_line.Read_geno_start)]
 			stop_list = [int(bed_line.Read_geno_stop)]
-
 	#End of loop
 	eval_paired_uniq(start_list,stop_list,bed_dict,new_uniq_bed,new_multi_bed)
 	if not debug: #delete unneeded tempfiles
@@ -882,7 +799,6 @@ class RepCalc(object):
 			elif strand == "-":
 				self.uniq_minus += count
 				# self.uniq_reads_minus += count
-
 	def add_multi(self,strand,read_fraction):
 		count = read_fraction
 		readcount=1
@@ -892,7 +808,6 @@ class RepCalc(object):
 		else:
 			self.multi_minus += count
 			# self.multi_reads_minus += readcount
-
 	def add_multi_u(self,strand,read_fraction):
 		count = read_fraction
 		readcount=1
@@ -902,20 +817,15 @@ class RepCalc(object):
 		else:
 			self.multi_u_minus += count
 			# self.multi_u_reads_minus += readcount
-
 	def add_read(self,read_ID,strand):
 		if strand == "+":
 			self.read_list_plus.append(read_ID)
 		elif strand == "-":
 			self.read_list_minus.append(read_ID)
-
-
 	def get_fragment(self,start,stop, strand):
 		start=int(start)
 		stop = int(stop)
 		length = stop - start
-
-
 		if strand == "+":
 			self.total_fragment_plus += length
 			if not self.start_plus or start < self.start_plus:
@@ -928,7 +838,6 @@ class RepCalc(object):
 				self.min_fragment_plus = min(length,self.min_fragment_plus)
 			self.total_reads_plus +=1
 			self.avg_fraglength_plus  = self.total_fragment_plus/self.total_reads_plus
-
 		else:
 			self.total_fragment_minus += length
 			if not self.start_minus or start < self.start_minus:
@@ -941,14 +850,12 @@ class RepCalc(object):
 				self.min_fragment_minus = min(length,self.min_fragment_minus)
 			self.total_reads_minus +=1
 			self.avg_fraglength_minus = self.total_fragment_minus/self.total_reads_minus
-
 		if self.start_plus and self.start_minus: #minimum comparing False and a number gives False
 			self.start_tot = min(self.start_plus, self.start_minus)
 		elif self.start_plus:
 			self.start_tot = self.start_plus
 		elif self.start_minus:
 			self.start_tot = self.start_minus
-
 		if self.stop_plus and self.stop_minus: #minimum comparing False and a number gives False
 			self.stop_tot = max(self.stop_plus, self.stop_minus)
 			self.avg_fraglength_tot = (self.avg_fraglength_plus + self.avg_fraglength_minus)/2
@@ -963,7 +870,6 @@ class RepCalc(object):
 	def get_uniqfragment(self,start,stop, strand, read_end, read_uniq):
 		start=int(start)
 		stop = int(stop)
-
 		if read_end != "paired":
 			if strand == "+":
 				self.uniq_fragment_plus += 1
@@ -973,8 +879,6 @@ class RepCalc(object):
 				self.uniq_fragment_minus += 1   #add fragment length to count
 				if start not in self.uniq_starts_minus:
 						self.uniq_starts_minus.add(start)
-
-
 		else: #if reads are paired
 			uniq_list = read_uniq.split(":")
 			R1_uniq_list = uniq_list[0].split("_")
@@ -1004,33 +908,26 @@ class RepCalc(object):
 				self.start_plus = start
 			if not self.stop_plus or stop > self.stop_plus:
 				self.stop_plus = stop
-
 		else:
 			if not self.start_minus or start < self.start_minus:
 				self.start_minus = start
 			if not self.stop_minus or stop > self.stop_minus:
 				self.stop_minus = stop
-
 		if self.start_plus and self.start_minus: #minimum comparing False and a number gives False
 			self.start_tot = min(self.start_plus, self.start_minus)
 		elif self.start_plus:
 			self.start_tot = self.start_plus
 		elif self.start_minus:
 			self.start_tot = self.start_minus
-
 		self.stop_tot = max(self.stop_plus, self.stop_minus)
-
 	def calcuniqRep(self):
 		self.efflength_plus = len(self.uniq_starts_plus)
 		self.efflength_minus = len(self.uniq_starts_minus)
-
 		if self.efflength_plus:
 			self.uniq_plus_perTagkb = self.uniq_fragment_plus/(int(self.efflength_plus)/1000)
-
 		if self.efflength_minus:
 			self.uniq_minus_perTagkb = self.uniq_fragment_minus/(int(self.efflength_minus)/1000)
 		self.uniqcounts=self.uniq_plus + self.uniq_minus
-
 	def calcmultiRep(self,iteration):
 		self.length_plus = self.stop_plus - self.start_plus
 		self.length_minus = self.stop_minus - self.start_minus
@@ -1039,7 +936,6 @@ class RepCalc(object):
 			self.total_1_plus = self.uniq_plus + self.multi_plus + self.multi_u_plus
 			self.total_1_minus = self.uniq_minus + self.multi_minus + self.multi_u_minus
 			self.counts_tot = self.total_1_plus + self.total_1_minus
-
 		tot_change = 0
 		changed_strands =0
 		pct_change = 0
@@ -1072,7 +968,6 @@ class RepCalc(object):
 					self.newmulti_plus_perkb = self.old_counts_plus/((self.length_plus - avg_fraglength +1)/1000)
 					if self.newmulti_plus_perkb  < 0:
 						self.newmulti_plus_perkb = self.old_counts_plus/((self.length_plus - min_fraglength +1)/1000)
-
 		if self.multi_minus:
 			avg_fraglength = self.avg_fraglength_minus
 			min_fraglength = self.min_fragment_minus
@@ -1101,15 +996,9 @@ class RepCalc(object):
 					self.newmulti_minus_perkb = self.old_counts_minus/((self.length_minus - avg_fraglength +1)/1000)
 					if self.newmulti_minus_perkb  < 0:
 						self.newmulti_minus_perkb = self.old_counts_minus/((self.length_minus - min_fraglength +1)/1000)
-
-
-		# self.multi_reads_plus = self.multi_max_reads_plus
-		# self.multi_reads_minus = self.multi_max_reads_minus
 		#reset multimax
 		self.multimax_plus = 0
 		self.multimax_minus = 0
-		# self.multi_max_reads_plus = 0
-		# self.multi_max_reads_minus = 0
 		if iteration > 1:
 			self.counts_tot = self.new_counts_plus + self.new_counts_minus
 		if changed_strands > 0:
@@ -1146,20 +1035,16 @@ class RepCalc(object):
 			self.start_tot = self.start_plus
 		elif self.start_minus:
 			self.start_tot = self.start_minus
-
 		if self.stop_plus and self.stop_minus: #minimum comparing False and a number gives False
 			self.stop_tot = max(self.stop_plus, self.stop_minus)
 		elif self.stop_plus:
 			self.stop_tot = self.stop_plus
 		elif self.stop_minus:
 			self.stop_tot = self.stop_minus
-
 	def calc_total_reads(self):
 		self.total_reads_plus = len(self.read_list_plus)
 		self.total_reads_minus = len(self.read_list_minus)
-
 	def writeRep(self,aligned_libsize, counts_file,basename,strandedness,iteration):
-
 		if iteration ==0:
 			self.total_1_plus = self.uniq_plus + self.multi_plus + self.multi_u_plus
 			self.total_1_minus = self.uniq_minus + self.multi_minus + self.multi_u_minus
@@ -1169,39 +1054,26 @@ class RepCalc(object):
 		self.counts_plus = self.uniq_plus + self.multi_plus + self.multi_u_plus
 		self.counts_minus =self.uniq_minus + self.multi_minus + self.multi_u_minus
 		self.total_1 = self.total_1_plus + self.total_1_minus
-		# self.total_reads_plus = self.uniq_reads_plus + self.multi_reads_plus + self.multi_u_reads_plus
-		# self.total_reads_minus = self.uniq_reads_minus + self.multi_reads_minus + self.multi_u+reads_minus
-
-		#read_lines = int(round(read_fraction * 10))
 		self.uniq_tot = self.uniq_plus + self.uniq_minus
 		self.counts_tot = self.counts_plus + self.counts_minus
 		self.total_reads_tot = self.total_reads_plus + self.total_reads_minus
 		self.TE_ID_tab = self.TE_ID.split("|")
 		self.TE_chr =self.TE_ID_tab[0]
-
 		if strandedness> 0:
 			if self.counts_plus > 0 and self.total_reads_plus > 0 and self.length_plus > 0:
 				outline = squire_bed(self.TE_chr,self.start_plus,self.stop_plus, self.avg_fraglength_plus,"+",self.TE_ID,self.uniq_plus,self.counts_plus,self.total_reads_plus,basename,aligned_libsize)
 				counts_file.writelines(outline.out_line + "\n")
 				self.fpkm += outline.fpkm
-				# if self.TEstrand=="+":
-				# 	self.same_strandcount=self.counts_plus
-				# else:
-				# 	self.opp_strandcount = self.counts_plus
+
 			if self.counts_minus > 0 and self.total_reads_minus > 0 and self.length_minus > 0:
 				outline = squire_bed(self.TE_chr,self.start_minus,self.stop_minus, self.avg_fraglength_minus,"-",self.TE_ID,self.uniq_minus,self.counts_minus,self.total_reads_minus,basename,aligned_libsize)
 				counts_file.writelines(outline.out_line + "\n")
 				self.fpkm += outline.fpkm
-				# if self.TEstrand=="-":
-				# 	self.same_strandcount=self.counts_minus
-				# else:
-				# 	self.opp_strandcount = self.counts_minus
+
 		else:
 			if self.counts_tot > 0 and self.total_reads_tot > 0 and self.length_tot > 0:
 				outline = squire_bed(self.TE_chr,self.start_tot,self.stop_tot,self.avg_fraglength_tot, ".",self.TE_ID,self.uniq_tot, self.counts_tot,self.total_reads_tot,basename,aligned_libsize)
 				counts_file.writelines(outline.out_line + "\n")
-			# self.same_strandcount="NA"
-			# self.opp_strandcount = "NA"
 				self.fpkm += outline.fpkm
 		
 
@@ -1213,10 +1085,6 @@ class squire_bed(object):
 		self.start = str(start)
 		self.end = str(stop)
 		self.length = stop - start
-		# print (self.length)
-		# print(start)
-		# print(stop)
-		# print(aligned_libsize)
 		self.score = TE_ID.split("|")[4]
 		self.bed = TE_ID.split("|")
 		self.strand = strand
@@ -1242,7 +1110,6 @@ class subfamily(object):
 		self.fpkm=0
 		# self.same=0
 		# self.opp = 0
-
 	def add_TE_count(self,RepClass,strandedness):
 		self.uniq +=RepClass.uniqcounts
 		self.total_counts+=RepClass.counts_tot
@@ -1254,7 +1121,6 @@ class subfamily(object):
 		# else:
 		# 	self.same= "NA"
 		# 	self.opp="NA"
-
 	def add_copy_info(self,line):
 		self.line_copies = line[1]
 		self.line_length = line[2]
@@ -1300,13 +1166,11 @@ class bedline(object):
 		if col_no >=10:
 			self.uniq = self.line_split[9]
 		else: self.uniq = False
-
 			#### TE variables #####
 		self.Read_length = int(self.Read_geno_stop) - int(self.Read_geno_start)
 
 
 	def write_bedline(self,outfile):
-
 		outline = [self.Read_chr, self.Read_geno_start, self.Read_geno_stop, self.Read_name, self.Read_score,self.Read_strand]
 		if self.TE_ID:
 			outline.append(self.TE_ID)
@@ -1329,17 +1193,14 @@ def uniquecount(tempBED,RepCalc_dict,read_locdict):
 			continue
 		unique_fragsum += bed_line.Read_length
 		unique_linecount+=1
-
 		if len(bed_line.TE_ID_list) == 1:
 		### Convert Read coordinates from Rep chrom coordinates to genomic coordinates ##
 		#if RNAseq data was aligned to whole genome, Read_start-Seq_start=0, so the result will be the same
 			TE_id_list = bed_line.TE_ID.split('|')
 			TE_start = TE_id_list[1]
 			TE_stop = TE_id_list[2]
-
 			if bed_line.TE_ID not in RepCalc_dict:
 				RepCalc_dict[bed_line.TE_ID] = RepCalc(bed_line.TE_ID)
-
 			if "uniq" in bed_line.uniq:
 				RepCalc_dict[bed_line.TE_ID].add_uniq(bed_line.Read_strand,1)
 				RepCalc_dict[bed_line.TE_ID].get_uniqfragment(bed_line.Read_geno_start,bed_line.Read_geno_stop,bed_line.Read_strand,bed_line.Read_end, bed_line.uniq)
@@ -1349,18 +1210,13 @@ def uniquecount(tempBED,RepCalc_dict,read_locdict):
 				RepCalc_dict[bed_line.TE_ID].add_multi_u(bed_line.Read_strand,1)
 				RepCalc_dict[bed_line.TE_ID].get_fragment(bed_line.Read_geno_start,bed_line.Read_geno_stop,bed_line.Read_strand)
 				RepCalc_dict[bed_line.TE_ID].add_read(bed_line.Read_ID,bed_line.Read_strand)
-
-		# if bed_line.Read_ID not in read_list:
-		#   read_list.append(bed_line.Read_ID)
 		else: #if two TE_IDs
 			for TE_ID in bed_line.TE_ID_list:
 				TE_id_list = TE_ID.split('|')
 				TE_start = TE_id_list[1]
 				TE_stop = TE_id_list[2]
-
 				if TE_ID not in RepCalc_dict:
 					RepCalc_dict[TE_ID] = RepCalc(TE_ID)
-
 				if "uniq" in bed_line.uniq: #if read is unique when aligning single end, otherwise only uniquely aligned because paired
 					RepCalc_dict[TE_ID].add_uniq(bed_line.Read_strand,1)
 					RepCalc_dict[TE_ID].get_uniqfragment(bed_line.Read_geno_start,bed_line.Read_geno_stop,bed_line.Read_strand,bed_line.Read_end, bed_line.uniq)
@@ -1370,25 +1226,19 @@ def uniquecount(tempBED,RepCalc_dict,read_locdict):
 					RepCalc_dict[TE_ID].add_multi_u(bed_line.Read_strand,1)
 					RepCalc_dict[TE_ID].get_fragment(bed_line.Read_geno_start,bed_line.Read_geno_stop,bed_line.Read_strand)
 					RepCalc_dict[TE_ID].add_read(bed_line.Read_ID,bed_line.Read_strand)
-
 	unique_fragavg=unique_fragsum/int(unique_linecount)
 	return unique_fragavg
 
 def multicount(tempBED,RepCalc_dict, multidict,read_locdict):
-
 	tempBED.seek(0)
-
 	for line in tempBED:
 		adj = False
 		bed_line = bedline(line)
 		if bed_line.Read_length < 25:
 			continue
-
 		if len(bed_line.TE_ID_list) == 1: #if read not aligned to more than one TE_ID at same position
-
 			if bed_line.TE_ID not in RepCalc_dict:
 				RepCalc_dict[bed_line.TE_ID] = RepCalc(bed_line.TE_ID) #Initiate Repeat class object, Add RepeatTagNo, Repeat Total Tag Length to Repeat class object
-
 			if bed_line.Read_ID not in multidict: #if TE_ID not in multi dictionary:
 				multidict[bed_line.Read_ID]={bed_line.TE_ID:bed_line.Read_strand} #For each Read_ID, include TE it's aligned to and strand it's on
 				# locdict[bed_line.Read_ID] = {bed_line.TE_ID:[bed_line.Read_chr,str(bed_line.Read_geno_start),str(bed_line.Read_geno_stop),adj]} #For each Read_Id, include location of alignment
@@ -1408,7 +1258,6 @@ def multicount(tempBED,RepCalc_dict, multidict,read_locdict):
 
 				if TE_ID not in RepCalc_dict:
 					RepCalc_dict[TE_ID] = RepCalc(TE_ID)
-
 				if bed_line.Read_ID not in multidict: #if TE_ID not in dictionary:
 					multidict[bed_line.Read_ID]={TE_ID:bed_line.Read_strand} #Initiate Repeat class object, Add RepeatTagNo, Repeat Total Tag Length to Repeat class object
 					# locdict[bed_line.Read_ID] = {TE_ID:[bed_line.Read_chr,str(bed_line.Read_geno_start),str(bed_line.Read_geno_stop),adj]}
@@ -1425,16 +1274,6 @@ def comparedict(read_multidict, RepCalc_dict):
 	for Read_ID,TE_dict in read_multidict.iteritems():
 		setfraction(Read_ID,TE_dict,RepCalc_dict)
 
-# def checkmatch(Read_Id,TE_dict,other_TE_dict): #compare read1 with read2
-#     tempdict = {}
-#     for TE_ID,strand in TE_dict.iteritems():
-#         if TE_ID in other_TE_dict: #check if TE_ID is in other read's TE_ID dictionary
-#             if other_TE_dict[TE_ID] == strand: # check if strand is the same (since in bedline function Read2 strandedness is already switched)
-#                 tempdict[TE_ID] = strand
-#     if tempdict:
-#         return tempdict
-#     else:
-#         return False
 
 def setfraction(Read_ID,TE_dict,RepCalc_dict): #compare multi with unique
 	ID_TagKb_dict = {}
@@ -1456,7 +1295,6 @@ def setfraction(Read_ID,TE_dict,RepCalc_dict): #compare multi with unique
 			elif RepCalc_dict[TE_ID].uniq_plus_perTagkb:
 		#if TE is tagged, evaluate likelihood of contribution by length of uniq Tags on appropriate strand per Tagkb
 				ID_TagKb_dict[TE_ID] = RepCalc_dict[TE_ID].uniq_plus_perTagkb
-
 		if strand == "-": #if TE_ID is untagged, would not have any unique reads
 			if RepCalc_dict[TE_ID].uniq_minus_perTagkb==0:
 				read_fraction = 1/len(TE_dict)
@@ -1468,11 +1306,9 @@ def setfraction(Read_ID,TE_dict,RepCalc_dict): #compare multi with unique
 			elif RepCalc_dict[TE_ID].uniq_minus_perTagkb:
 		#if TE is tagged, evaluate likelihood of contribution by length of uniq Tags on appropriate strand per Tagkb
 				ID_TagKb_dict[TE_ID] = RepCalc_dict[TE_ID].uniq_minus_perTagkb
-
 	TagKb_sum = sum(itervalues(ID_TagKb_dict))
 	#print("TagKb_sum " + Read_ID + " " + str(TagKb_sum),file = sys.stderr)
 	remainder_fraction = (len(TE_dict) - UnTagged_TEs)/len(TE_dict) #fraction of TEs in TE_dict that are tagged
-
 	if TagKb_sum > 0: #if some unique elements can be assigned
 		for TE_ID, uniq_sum in ID_TagKb_dict.iteritems():
 			# adj=locdict[TE_ID][3]
@@ -1493,7 +1329,6 @@ def setfraction(Read_ID,TE_dict,RepCalc_dict): #compare multi with unique
 			RepCalc_dict[TE_ID].add_multi(strand,read_fraction)
 			# RepCalc_dict[TE_ID].get_fragment(locdict[TE_ID][1],locdict[TE_ID][2],strand)
 			read_subF.append(get_subF(TE_ID))
-
 	unique_subF = set(read_subF) #add 1 read for each uniquely represented subfamily
 	if read_sum > 1.01:
 		print("read_sum is greater than 1 for " + Read_ID + "\n",file = sys.stderr)
@@ -1512,18 +1347,13 @@ def estdict(read_multidict, RepCalc_dict):
 		read_no +=1
 		if changed_likelihood >= 0.1:
 			changed_reads +=1
-
 	if read_no > 0:
 		avg_changed_likelihood = changed_likelihood_sum/read_no
 	else:
 		avg_changed_likelihood = 0
-
-
 	print("Expectation maximization changed the average likelihood by: " + str(avg_changed_likelihood) + " " + str(datetime.now())  + "\n",file = sys.stderr)
 	print("Number of reads with average TE likelihoods changed by at least 0.1: " + str(changed_reads) + " " + str(datetime.now())  + "\n",file = sys.stderr)
 	return avg_changed_likelihood
-
-
 
 def maxfraction(Read_ID,TE_dict,RepCalc_dict): #calculate new likelihoods and compare with previous
 	ID_TagKb_dict = {}
@@ -1537,7 +1367,6 @@ def maxfraction(Read_ID,TE_dict,RepCalc_dict): #calculate new likelihoods and co
 	TEcount=0
 	### Use count from  unique count based on strand
 	for TE_ID,strand in TE_dict.iteritems():
-		# adj=locdict[TE_ID][3]
 		if strand == "+":
 			ID_TagKb_dict[(TE_ID,strand)] = (RepCalc_dict[TE_ID].oldmulti_plus_perkb,RepCalc_dict[TE_ID].newmulti_plus_perkb)
 			oldTagKb_sum += RepCalc_dict[TE_ID].oldmulti_plus_perkb
@@ -1552,7 +1381,6 @@ def maxfraction(Read_ID,TE_dict,RepCalc_dict): #calculate new likelihoods and co
 				TEcount+=1
 
 	for TE_ID_tuple, multi_sum_tuple in ID_TagKb_dict.iteritems():
-		# adj=locdict[TE_ID][3]
 		TE_ID = TE_ID_tuple[0]
 		strand = TE_ID_tuple[1]
 		old_multi = multi_sum_tuple[0]
@@ -1569,7 +1397,6 @@ def maxfraction(Read_ID,TE_dict,RepCalc_dict): #calculate new likelihoods and co
 		if oldTagKb_sum == 0:
 			oldread_fraction =  1/len(TE_dict)
 		else:
-		#print(TE_ID + " " + str(multi_sum),file = sys.stderr)
 			oldread_fraction = (old_multi/oldTagKb_sum)
 
 		changed_likelihood += abs(newread_fraction-oldread_fraction)
@@ -1595,26 +1422,15 @@ def sort_coord(infile, outfile,chrcol,startcol,debug):
 	if not debug:
 		os.unlink(infile)
 
-
-# def sort_coord(infile, outfile,debug):
-# 	sort_command_list = ["sort","-k1,1 -k2,2n", infile, ">", outfile]
-# 	sort_command = " ".join(sort_command_list)
-# 	sp.check_call(["/bin/sh", "-c", sort_command])
-
-# 	if not debug:
-# 		os.unlink(infile)
-
 def sort_counts(tempfile,headerfile,countsfile, field,debug):
 	sorted_countsfile = tempfile + ".sorted"
 	field_command = str(field) + "," + str(field) + "rn"
 	sort_command_list = ["sort","-k",field_command, tempfile, ">", sorted_countsfile]
 	sort_command = " ".join(sort_command_list)
 	sp.check_call(["/bin/sh", "-c", sort_command])
-
 	catcommand_list = ["cat", headerfile, sorted_countsfile, ">",countsfile ] #combines multi_aligned reads
 	catcommand = " ".join(catcommand_list)
 	sp.check_call(["/bin/sh","-c",catcommand])
-
 	if not debug:
 		os.unlink(sorted_countsfile)
 		os.unlink(tempfile)
@@ -1637,14 +1453,12 @@ def bedgraph(infile,strandedness,outfolder,basename):
 		stranded_yesno="Unstranded"
 		bedgraph_unique = outfolder + "/" + basename + "Signal.Unique.str1.out.bg"
 		bedgraph_multi = outfolder + "/" + basename + "Signal.UniqueMultiple.str1.out.bg"
-
 	inputs = ["""--inputBAMfile""", infile]
 	outputs = ["""--outWigType""", "bedGraph", """--outWigStrand""", stranded_yesno, """--outFileNamePrefix""", outfolder + "/" + basename]
 	normalization=["""--outWigNorm""", "None"]
 	STARcommand_list = ["STAR","""--runMode""","inputAlignmentsFromBAM"] + inputs + outputs + normalization
 	STARcommand=" ".join(STARcommand_list)
 	sp.check_call(["/bin/sh", "-c", STARcommand])
-
 	if strandedness !=0:
 		rename_file(plus_bedgraph_unique,outfolder + "/" + basename + "_plus_unique.bedgraph")
 		rename_file(minus_bedgraph_unique,outfolder + "/" + basename + "_minus_unique.bedgraph")
@@ -1655,7 +1469,6 @@ def bedgraph(infile,strandedness,outfolder,basename):
 		rename_file(bedgraph_multi,outfolder + "/" + basename + "_multi.bedgraph")
 
 def main(**kwargs):
-
 	######## ARGUMENTS ###########
 	#check if already args is provided, i.e. main() is called from the top level script
 	args = kwargs.get('args', None)
@@ -1674,7 +1487,6 @@ def main(**kwargs):
 		parser.add_argument("-s","--strandedness", help = " '0' if unstranded eg Standard Illumina, 1 if first-strand eg Illumina Truseq, dUTP, NSR, NNSR, 2 if second-strand, eg Ligation, Standard SOLiD (optional,default=0)", type = int, metavar = "<int>", default = 0)
 		parser.add_argument("-e","--EM", help = "Run estimation-maximization on TE counts given number of times (optional, specify 0 if no EM desired; default=auto)", type=str, default = "auto")
 		parser.add_argument("-v","--verbosity", help = "Want messages and runtime printed to stderr (optional; default=False)", action = "store_true", default = False)
-
 		args = parser.parse_args()
 ########## I/O #########
 	###### ARGUMENTS ######
@@ -1690,7 +1502,6 @@ def main(**kwargs):
 	EM=args.EM
 	build = args.build
 	verbosity=args.verbosity
-
 
 	######### START TIMING SCRIPT ############
 	if verbosity:
@@ -1759,9 +1570,6 @@ def main(**kwargs):
 	if verbosity:
 		print("Creating temporary files"+ str(datetime.now())  + "\n",file = sys.stderr)
 	counts_temp = tempfile.NamedTemporaryFile(delete=False, dir = tempfolder, prefix="count" +  ".tmp")
-	# uniq_temp = tempfile.NamedTemporaryFile(delete=False, dir = tempfolder, prefix="count" +  ".uniqtmp")
-	# multi_temp = tempfile.NamedTemporaryFile(delete=False, dir = tempfolder, prefix="count" +  ".multitmp")
-
 	countsfilepath = outfolder + "/" + basename + "_TEcounts.txt"
 	counts_file_header = open(countsfilepath +".header",'w')
 
@@ -1803,8 +1611,6 @@ def main(**kwargs):
 		label_files(single_coords_tempfile1,single_labeled_tempfile1,"single",debug)
 		label_files(single_labeled_tempfile1,single_labeled_tempfile2,"R1",debug)
 
-		# os.unlink(single_reduced_tempfile1)
-		# os.unlink(single_coords_tempfile1)
 		#find unique single alignments
 		first_tempfile1 = make_tempfile(basename,"first_1", tempfolder)
 		unique_tempfile1 = make_tempfile(basename,"unique_1", tempfolder)
@@ -1812,8 +1618,6 @@ def main(**kwargs):
 
 		find_uniq(single_labeled_tempfile2,first_tempfile1,unique_tempfile1, multi_tempfile1,debug)
 
-		# os.unlink(single_labeled_tempfile1)
-		# os.unlink(single_labeled_tempfile2)
 
 		#label uniq, multi, or single
 		multi_bed = make_tempfile(basename,"multi_bed", tempfolder)
@@ -1822,12 +1626,7 @@ def main(**kwargs):
 		label_files(unique_tempfile1, unique_bed, "uniq",debug)
 		label_files(multi_tempfile1, multi_bed, "multi",debug)
 
-		# os.unlink(unique_tempfile1)
-		# os.unlink(multi_tempfile1)
-
 		aligned_libsize = getlibsize(logfile, bamfile,multi_bed,unique_bed,paired_end,debug)
-
-		# os.unlink(first_tempfile1)
 
 	if paired_end:
 		#intersect bam files with TE bed files
@@ -1875,8 +1674,6 @@ def main(**kwargs):
 		reduce_reads(paired_bed_tempfile1_sorted, paired_reduced_tempfile1,debug)
 		reduce_reads(paired_bed_tempfile2_sorted, paired_reduced_tempfile2,debug)
 
-		# os.unlink(paired_bed_tempfile1)
-		# os.unlink(paired_bed_tempfile2)
 		#get genomic coordinates and RNA strand for all alignments
 		if verbosity:
 			print("Getting genomic coordinates of read"+ str(datetime.now())  + "\n",file = sys.stderr)
@@ -1885,26 +1682,15 @@ def main(**kwargs):
 		get_coords(paired_reduced_tempfile1,1,strandedness,paired_coords_tempfile1,debug)
 		get_coords(paired_reduced_tempfile2,2,strandedness,paired_coords_tempfile2,debug)
 
-
-		# os.unlink(paired_reduced_tempfile1)
-		# os.unlink(paired_reduced_tempfile2)
-
 		paired_labeled_tempfile1 = make_tempfile(basename,"paired_labeled_1", tempfolder)
 		paired_labeled_tempfile2 = make_tempfile(basename,"paired_labeled_2", tempfolder)
 		label_files(paired_coords_tempfile1,paired_labeled_tempfile1,"R1",debug)
 		label_files(paired_coords_tempfile2,paired_labeled_tempfile2,"R2",debug)
 
-		# os.unlink(paired_coords_tempfile1)
-		# os.unlink(paired_coords_tempfile2)
-
-
 		#remove /1 and /2 from read ID column
 		paired_fixed_tempfile1 = make_tempfile(basename,"paired_fixed_1", tempfolder)
 		paired_fixed_tempfile2 = make_tempfile(basename,"paired_fixed_2", tempfolder)
 		fix_paired(paired_labeled_tempfile1,paired_labeled_tempfile2, paired_fixed_tempfile1,paired_fixed_tempfile2,debug)
-
-		# os.unlink(paired_labeled_tempfile1)
-		# os.unlink(paired_labeled_tempfile2)
 
 		#find unique single alignments
 		if verbosity:
@@ -1921,9 +1707,6 @@ def main(**kwargs):
 		find_uniq(paired_fixed_tempfile1,first_tempfile1,unique_tempfile1, multi_tempfile1,debug)
 		find_uniq(paired_fixed_tempfile2,first_tempfile2, unique_tempfile2, multi_tempfile2,debug)
 
-		# os.unlink(paired_fixed_tempfile1)
-		# os.unlink(paired_fixed_tempfile2)
-
 		#label uniq, multi, or paired
 
 		unique_tempfile1_labeled = make_tempfile(basename,"unique_labeled_1", tempfolder)
@@ -1936,21 +1719,11 @@ def main(**kwargs):
 		label_files(unique_tempfile2, unique_tempfile2_labeled, "uniq",debug)
 		label_files(multi_tempfile1, multi_tempfile1_labeled, "multi",debug)
 		label_files(multi_tempfile2, multi_tempfile2_labeled, "multi",debug)
-		# os.unlink(first_tempfile1)
-		# os.unlink(first_tempfile2)
-		# os.unlink(unique_tempfile1)
-		# os.unlink(unique_tempfile2)
-		# os.unlink(multi_tempfile1)
-		# os.unlink(multi_tempfile2)
+
 		paired_tempfile1_ulabeled = make_tempfile(basename,"paired_ulabeled_1", tempfolder)
 		paired_tempfile2_ulabeled = make_tempfile(basename,"paired_ulabeled_2", tempfolder)
 		combine_files(unique_tempfile1_labeled,multi_tempfile1_labeled, paired_tempfile1_ulabeled,debug)
 		combine_files(unique_tempfile2_labeled,multi_tempfile2_labeled, paired_tempfile2_ulabeled,debug)
-
-		# os.unlink(unique_tempfile1_labeled)
-		# os.unlink(unique_tempfile2_labeled)
-		# os.unlink(multi_tempfile1_labeled)
-		# os.unlink(multi_tempfile2_labeled)
 
 		#combine pairs
 		if verbosity:
@@ -1960,16 +1733,9 @@ def main(**kwargs):
 		paired_matched_tempfile = make_tempfile(basename,"paired_matched", tempfolder)
 		match_reads(paired_tempfile1_ulabeled,paired_tempfile2_ulabeled,strandedness,paired_matched_tempfile,paired_unmatched1, paired_unmatched2,debug) #match pairs between paired files
 
-
-		# os.unlink(paired_tempfile1_ulabeled)
-		# os.unlink(paired_tempfile2_ulabeled)
-
-
 		#sort matched
 		matched_tempfile_sorted = make_tempfile(basename,"paired_matched_sorted", tempfolder)
 		sort_temp(paired_matched_tempfile,4,matched_tempfile_sorted,debug)
-
-		# os.unlink(paired_matched_tempfile)
 
 		#combine start and stop of paired reads
 		matched_bed = make_tempfile(basename,"matched_bed", tempfolder)
@@ -1979,9 +1745,6 @@ def main(**kwargs):
 
 		combined_unmatched = make_tempfile(basename,"combined_unmatched", tempfolder)
 		combine_files(paired_unmatched1, paired_unmatched2, combined_unmatched,debug)
-
-		# os.unlink(paired_unmatched1)
-		# os.unlink(paired_unmatched2)
 
 		#Find single reads that are matched outside of TE but are still proper pair
 		if verbosity:
@@ -1999,15 +1762,11 @@ def main(**kwargs):
 			print("Removing single-end reads that have matching paired-end mates at other alignment locations"+ str(datetime.now())  + "\n",file = sys.stderr)
 		only_unmatched = make_tempfile(basename,"only_unmatched", tempfolder)
 		remove_repeat_reads(combined_matched,combined_unmatched2,only_unmatched,debug)
-		# os.unlink(combined_unmatched)
-		# os.unlink(combined_unmatched2)
 
 		#combine matched and unmatched alignments
 		combined_bed = make_tempfile(basename,"combined_bed", tempfolder)
 		combine_files(combined_matched,only_unmatched,combined_bed,debug)
 
-		# os.unlink(matched_bed)
-		# os.unlink(only_unmatched)
 		if verbosity:
 			print("Identifying and labeling unique and multi fragments"+ str(datetime.now())  + "\n",file = sys.stderr)
 		first_tempfile = make_tempfile(basename,"first", tempfolder)
@@ -2016,8 +1775,6 @@ def main(**kwargs):
 		multi_bed_pre = make_tempfile(basename,"multi_bed_pre", tempfolder)
 		find_uniq(combined_bed,first_tempfile,unique_bed,multi_bed_pre,debug)
 
-		# os.unlink(combined_bed)
-
 		#find unique pairs in multi_bed
 		multi_bed = make_tempfile(basename,"multi_bed", tempfolder)
 		if verbosity:
@@ -2025,11 +1782,6 @@ def main(**kwargs):
 		find_paired_uniq(multi_bed_pre,paired_uniq_tempfile,multi_bed,unique_bed,debug)
 
 		aligned_libsize = getlibsize(logfile, bamfile,multi_bed,unique_bed,paired_end,debug)
-
-		# os.unlink(first_tempfile)
-		# os.unlink(multi_bed_pre)
-		# os.unlink(paired_uniq_tempfile)
-
 
 	######## COUNT READ(S) #########################
 	read_multidict={}  #dictionary to store TE_IDs for each read alignment
@@ -2167,7 +1919,6 @@ def main(**kwargs):
 		subF_dict = {}
 
 	for TE_ID,RepClass in RepCalc_dict.iteritems(): #for each TE_ID
-		# RepClass.calc_transcript_coords(read_locdict)
 		RepClass.writeRep(aligned_libsize,counts_temp,basename,strandedness,iteration)
 	##########Sort by highest total counts before writing and add to subF dictionary
 
@@ -2179,7 +1930,6 @@ def main(**kwargs):
 				subF_dict[subF].add_TE_count(RepClass,strandedness)
 			else:
 				subF_dict[subF].add_TE_count(RepClass,strandedness)
-
 
 	#Close dictionaries from memory
 	counts_temp.close()
@@ -2210,14 +1960,11 @@ def main(**kwargs):
 		copiesfile.close()
 		temp_subF.close()
 
-
 		sort_counts(temp_subF.name,subF_file_header.name,subF_filepath,6,debug) #Sort by 7th field (multi)
 
 		if not debug:
 			os.unlink(unique_bed)
 			os.unlink(multi_bed)
-
-
 
 	####### STOP TIMING SCRIPT #######################
 	if verbosity:
