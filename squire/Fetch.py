@@ -240,6 +240,7 @@ def main(**kwargs):
             with tarfile.TarFile.open(chrom_name_compressed, 'r') as tarredgzippedFile:
                 tarredgzippedFile.extractall(path=chrom_name)
         elif "fa.gz" in chrom_name_compressed:
+            make_dir(chrom_outfolder)
             chrom_name = chrom_outfolder + "/" + build + ".fa"
             decompress(compressed = chrom_name_compressed, decompressed = chrom_name)
         elif "chromFa.zip" in chrom_name_compressed:
