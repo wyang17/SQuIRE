@@ -143,7 +143,7 @@ def Stringtie(bamfile,outfolder,basename,strandedness,pthreads,gtf, verbosity,ou
         min_tx_length=200
         max_multi_pct = .95
         min_coverage = 2.5
-        TEoptions = [stringtie_strand, "-f",str(pct_max_fpkm),"-m", str(min_tx_length), "-a", str(flanklength), "-j", str(flankdepth), "-g", str(read_gap), "-M", str(max_multi_pct), "-c", str(min_coverage), "-e"]
+        TEoptions = [stringtie_strand, "-f",str(pct_max_fpkm),"-m", str(min_tx_length), "-a", str(flanklength), "-j", str(flankdepth), "-g", str(read_gap), "-M", str(max_multi_pct), "-c", str(min_coverage)]
     else:
         inputs = [bamfile]
         pct_max_fpkm=0.1
@@ -214,12 +214,13 @@ def filter_tx(infile,gene_dict,read_length,genecounts):
 				if gtf_line.category=="exon":  
 					transcribed_length=int(gtf_line.stop) - int(gtf_line.start)                        
 					counts = gtf_line.coverage*transcribed_length/int(read_length)
-					if counts > 0:
+					if counts > 0:						
 						gene_dict[(gtf_line.Gene_ID,gtf_line.strand)].add_counts(counts)  
 						gene_dict[(gtf_line.Gene_ID,gtf_line.strand)].add_tx(gtf_line.transcript_id)                
 			else:
 				ref_line=gtfline(line[9:18])
 				gene_dict[(ref_line.Gene_ID,ref_line.strand)].add_tx(gtf_line.transcript_id)
+
 	with open(genecounts,'w') as outfile:
 		for genestrand,geneinfo in gene_dict.iteritems():
 			outline="\t".join(geneinfo.countsout)
@@ -251,19 +252,27 @@ class gene_info(object):
 		self.countsout = [self.chrom,self.start,self.stop,self.Gene_ID,self.fpkm,self.strand,int(round(self.counts)),self.tx_ID_string]
 		self.countsout = [str(i) for i in self.countsout]
 
-def filter_abund(infile,gene_dict,notinref_dict):
+def calculate_libsize(cov,fpkm,read_length):
+	libsize=(cov *1000) / (fpkm * read_length) * 1000000
+	return libsize
+
+def filter_abund(infile,gene_dict,notinref_dict,read_length):
+	libsize=set()
 	with open(infile,'r') as filterin:        
 		for line in filterin:
 			line = line.rstrip()
 			line = line.split("\t")
 			if "Gene" in line[0] and "TPM" in line[-1]:
 				continue
-			gene_data=gene_info(line)          
+			gene_data=gene_info(line)
+			if gene_data.fpkm > 0:
+				libsize.add(calculate_libsize(gene_data.coverage,gene_data.fpkm, read_length))
 			if not notinref_dict:
 				gene_dict[(gene_data.Gene_ID,gene_data.strand)] = gene_data
 			else:
 				if gene_data.Gene_ID in notinref_dict:
 					gene_dict[(gene_data.Gene_ID,gene_data.strand)] = gene_data
+	return max(libsize)
 
 
 def intersect(bamfile,bedfile,out_bed):
@@ -1561,7 +1570,7 @@ def main(**kwargs):
 	sort_coord(outgtf_ref_temp,outgtf_ref,1,4,debug)
 	sort_coord(abund_ref_temp,abund_ref,3,5,debug)	       
 	gene_dict={}
-	filter_abund(abund_ref,gene_dict,False)
+	aligned_libsize = filter_abund(abund_ref,gene_dict,False, read_length)
 	genecounts=outfolder + "/" + basename + "_refGenecounts.txt"
 	filter_tx(outgtf_ref, gene_dict,read_length,genecounts)
 
@@ -1626,7 +1635,7 @@ def main(**kwargs):
 		label_files(unique_tempfile1, unique_bed, "uniq",debug)
 		label_files(multi_tempfile1, multi_bed, "multi",debug)
 
-		aligned_libsize = getlibsize(logfile, bamfile,multi_bed,unique_bed,paired_end,debug)
+		#aligned_libsize = getlibsize(logfile, bamfile,multi_bed,unique_bed,paired_end,debug)
 
 	if paired_end:
 		#intersect bam files with TE bed files
@@ -1781,7 +1790,7 @@ def main(**kwargs):
 			print("Identifying multi read pairs with one end unique"+ str(datetime.now())  + "\n",file = sys.stderr)
 		find_paired_uniq(multi_bed_pre,paired_uniq_tempfile,multi_bed,unique_bed,debug)
 
-		aligned_libsize = getlibsize(logfile, bamfile,multi_bed,unique_bed,paired_end,debug)
+		#aligned_libsize = getlibsize(logfile, bamfile,multi_bed,unique_bed,paired_end,debug)
 
 	######## COUNT READ(S) #########################
 	read_multidict={}  #dictionary to store TE_IDs for each read alignment
