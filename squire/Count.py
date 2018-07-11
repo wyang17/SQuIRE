@@ -214,13 +214,12 @@ def filter_tx(infile,gene_dict,read_length,genecounts):
 				if gtf_line.category=="exon":  
 					transcribed_length=int(gtf_line.stop) - int(gtf_line.start)                        
 					counts = gtf_line.coverage*transcribed_length/int(read_length)
-					if counts > 0:						
+					if counts > 0:
 						gene_dict[(gtf_line.Gene_ID,gtf_line.strand)].add_counts(counts)  
 						gene_dict[(gtf_line.Gene_ID,gtf_line.strand)].add_tx(gtf_line.transcript_id)                
 			else:
 				ref_line=gtfline(line[9:18])
 				gene_dict[(ref_line.Gene_ID,ref_line.strand)].add_tx(gtf_line.transcript_id)
-
 	with open(genecounts,'w') as outfile:
 		for genestrand,geneinfo in gene_dict.iteritems():
 			outline="\t".join(geneinfo.countsout)
@@ -251,6 +250,21 @@ class gene_info(object):
 		self.flagout = [self.Gene_ID,self.fpkm,self.counts]
 		self.countsout = [self.chrom,self.start,self.stop,self.Gene_ID,self.fpkm,self.strand,int(round(self.counts)),self.tx_ID_string]
 		self.countsout = [str(i) for i in self.countsout]
+
+def filter_abund(infile,gene_dict,notinref_dict):
+	with open(infile,'r') as filterin:        
+		for line in filterin:
+			line = line.rstrip()
+			line = line.split("\t")
+			if "Gene" in line[0] and "TPM" in line[-1]:
+				continue
+			gene_data=gene_info(line)          
+			if not notinref_dict:
+				gene_dict[(gene_data.Gene_ID,gene_data.strand)] = gene_data
+			else:
+				if gene_data.Gene_ID in notinref_dict:
+					gene_dict[(gene_data.Gene_ID,gene_data.strand)] = gene_data
+
 
 def intersect(bamfile,bedfile,out_bed):
 	######## INTERSECT WITH BED FILE #########################
@@ -1546,7 +1560,9 @@ def main(**kwargs):
 	Stringtie(bamfile,outfolder,basename,strandedness,pthreads,ingtf, verbosity,outgtf_ref_temp) 
 	sort_coord(outgtf_ref_temp,outgtf_ref,1,4,debug)
 	sort_coord(abund_ref_temp,abund_ref,3,5,debug)	       
-	genename_dict={}
+	gene_dict={}
+	filter_abund(abund_ref,gene_dict,False)
+
 	genecounts=outfolder + "/" + basename + "_refGenecounts.txt"
 	filter_tx(outgtf_ref, genename_dict,read_length,genecounts)
 	if not debug:

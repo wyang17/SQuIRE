@@ -300,7 +300,7 @@ def main(**kwargs):
     ### CHECK INPUTS#####
     index = find_file(fetch_folder,"_STAR",build, 1,True)
 
-    gtf = find_file("squire_fetch","_refGene.gtf",build, 1,True)
+    gtf = find_file(fetch_folder,"_refGene.gtf",build, 1,True)
 
     if not basename:
         basename = get_basename(read1)
