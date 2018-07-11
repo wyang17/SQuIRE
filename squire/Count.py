@@ -92,7 +92,7 @@ def getlibsize(logfile, infile,multi_bed,uniq_bed,paired_end,debug):
 				unique_libsize  = int(re.search("\d+",line).group(0))
 			elif multi_string in line:
 				multi_libsize =int(re.search("\d+",line).group(0))
-		libsize = (unique_libsize + multi_libsize)/2
+		libsize = (unique_libsize + multi_libsize)
 		STAR_logfile.close()
 	else:
 		count_temp = infile + "libsize"
@@ -104,7 +104,7 @@ def getlibsize(logfile, infile,multi_bed,uniq_bed,paired_end,debug):
 			first_line_split = first_line.split()
 			libsize = int(first_line_split[0])
 		if paired_end:
-			libsize = libsize/2
+			libsize = libsize
 		if not debug:
 			os.unlink(count_temp)
 	return libsize
@@ -143,7 +143,7 @@ def Stringtie(bamfile,outfolder,basename,strandedness,pthreads,gtf, verbosity,ou
         min_tx_length=200
         max_multi_pct = .95
         min_coverage = 2.5
-        TEoptions = [stringtie_strand, "-f",str(pct_max_fpkm),"-m", str(min_tx_length), "-a", str(flanklength), "-j", str(flankdepth), "-g", str(read_gap), "-M", str(max_multi_pct), "-c", str(min_coverage)]
+        TEoptions = [stringtie_strand, "-f",str(pct_max_fpkm),"-m", str(min_tx_length), "-a", str(flanklength), "-j", str(flankdepth), "-g", str(read_gap), "-M", str(max_multi_pct), "-c", str(min_coverage), "-e"]
     else:
         inputs = [bamfile]
         pct_max_fpkm=0.1
@@ -251,29 +251,6 @@ class gene_info(object):
 		self.flagout = [self.Gene_ID,self.fpkm,self.counts]
 		self.countsout = [self.chrom,self.start,self.stop,self.Gene_ID,self.fpkm,self.strand,int(round(self.counts)),self.tx_ID_string]
 		self.countsout = [str(i) for i in self.countsout]
-
-def calculate_libsize(cov,fpkm,read_length):
-	libsize=(cov *1000) / (fpkm * read_length) * 1000000
-	return libsize
-
-def filter_abund(infile,gene_dict,notinref_dict,read_length):
-	libsize=set()
-	with open(infile,'r') as filterin:        
-		for line in filterin:
-			line = line.rstrip()
-			line = line.split("\t")
-			if "Gene" in line[0] and "TPM" in line[-1]:
-				continue
-			gene_data=gene_info(line)
-			if gene_data.fpkm > 0:
-				libsize.add(calculate_libsize(gene_data.coverage,gene_data.fpkm, read_length))
-			if not notinref_dict:
-				gene_dict[(gene_data.Gene_ID,gene_data.strand)] = gene_data
-			else:
-				if gene_data.Gene_ID in notinref_dict:
-					gene_dict[(gene_data.Gene_ID,gene_data.strand)] = gene_data
-	return max(libsize)
-
 
 def intersect(bamfile,bedfile,out_bed):
 	######## INTERSECT WITH BED FILE #########################
@@ -1561,19 +1538,20 @@ def main(**kwargs):
 
 	if verbosity:
 		print("Quantifying Gene expression "+ str(datetime.now())  + "\n",file = sys.stderr)
-	gtf = find_file(fetch_folder,"_refGene.gtf",build,1,True)
+	ingtf = find_file(fetch_folder,".gtf",build,1,True)
 	outgtf_ref =outfolder + "/" + basename + ".gtf"
 	abund_ref =outgtf_ref.replace(".gtf","_abund.txt")
 	outgtf_ref_temp =  make_tempfile(basename, "outgtf_ref", tempfolder)
 	abund_ref_temp = outgtf_ref_temp.replace("outgtf","outabund")
-	Stringtie(bamfile,outfolder,basename,strandedness,pthreads,gtf, verbosity,outgtf_ref_temp) 
+	Stringtie(bamfile,outfolder,basename,strandedness,pthreads,ingtf, verbosity,outgtf_ref_temp) 
 	sort_coord(outgtf_ref_temp,outgtf_ref,1,4,debug)
 	sort_coord(abund_ref_temp,abund_ref,3,5,debug)	       
-	gene_dict={}
-	aligned_libsize = filter_abund(abund_ref,gene_dict,False, read_length)
+	genename_dict={}
 	genecounts=outfolder + "/" + basename + "_refGenecounts.txt"
-	filter_tx(outgtf_ref, gene_dict,read_length,genecounts)
-
+	filter_tx(outgtf_ref, genename_dict,read_length,genecounts)
+	if not debug:
+		os.unlink(outgtf_ref_temp)
+		os.unlink(abund_ref_temp)		
 
 	#### OPEN OUTPUTS & WRITE HEADER INFORMATION#############
 	if verbosity:
@@ -1635,7 +1613,7 @@ def main(**kwargs):
 		label_files(unique_tempfile1, unique_bed, "uniq",debug)
 		label_files(multi_tempfile1, multi_bed, "multi",debug)
 
-		#aligned_libsize = getlibsize(logfile, bamfile,multi_bed,unique_bed,paired_end,debug)
+		aligned_libsize = getlibsize(logfile, bamfile,multi_bed,unique_bed,paired_end,debug)
 
 	if paired_end:
 		#intersect bam files with TE bed files
@@ -1790,7 +1768,7 @@ def main(**kwargs):
 			print("Identifying multi read pairs with one end unique"+ str(datetime.now())  + "\n",file = sys.stderr)
 		find_paired_uniq(multi_bed_pre,paired_uniq_tempfile,multi_bed,unique_bed,debug)
 
-		#aligned_libsize = getlibsize(logfile, bamfile,multi_bed,unique_bed,paired_end,debug)
+		aligned_libsize = getlibsize(logfile, bamfile,multi_bed,unique_bed,paired_end,debug)
 
 	######## COUNT READ(S) #########################
 	read_multidict={}  #dictionary to store TE_IDs for each read alignment
