@@ -92,7 +92,7 @@ def getlibsize(logfile, infile,multi_bed,uniq_bed,paired_end,debug):
 				unique_libsize  = int(re.search("\d+",line).group(0))
 			elif multi_string in line:
 				multi_libsize =int(re.search("\d+",line).group(0))
-		libsize = (unique_libsize + multi_libsize)/2
+		libsize = (unique_libsize + multi_libsize)
 		STAR_logfile.close()
 	else:
 		count_temp = infile + "libsize"
@@ -104,7 +104,7 @@ def getlibsize(logfile, infile,multi_bed,uniq_bed,paired_end,debug):
 			first_line_split = first_line.split()
 			libsize = int(first_line_split[0])
 		if paired_end:
-			libsize = libsize/2
+			libsize = libsize
 		if not debug:
 			os.unlink(count_temp)
 	return libsize
@@ -1552,19 +1552,22 @@ def main(**kwargs):
 
 	if verbosity:
 		print("Quantifying Gene expression "+ str(datetime.now())  + "\n",file = sys.stderr)
-	gtf = find_file(fetch_folder,"_refGene.gtf",build,1,True)
+	ingtf = find_file(fetch_folder,".gtf",build,1,True)
 	outgtf_ref =outfolder + "/" + basename + ".gtf"
 	abund_ref =outgtf_ref.replace(".gtf","_abund.txt")
 	outgtf_ref_temp =  make_tempfile(basename, "outgtf_ref", tempfolder)
 	abund_ref_temp = outgtf_ref_temp.replace("outgtf","outabund")
-	Stringtie(bamfile,outfolder,basename,strandedness,pthreads,gtf, verbosity,outgtf_ref_temp) 
+	Stringtie(bamfile,outfolder,basename,strandedness,pthreads,ingtf, verbosity,outgtf_ref_temp) 
 	sort_coord(outgtf_ref_temp,outgtf_ref,1,4,debug)
 	sort_coord(abund_ref_temp,abund_ref,3,5,debug)	       
 	gene_dict={}
 	filter_abund(abund_ref,gene_dict,False)
-	genecounts=outfolder + "/" + basename + "_refGenecounts.txt"
-	filter_tx(outgtf_ref, gene_dict,read_length,genecounts)
 
+	genecounts=outfolder + "/" + basename + "_refGenecounts.txt"
+	filter_tx(outgtf_ref, genename_dict,read_length,genecounts)
+	if not debug:
+		os.unlink(outgtf_ref_temp)
+		os.unlink(abund_ref_temp)		
 
 	#### OPEN OUTPUTS & WRITE HEADER INFORMATION#############
 	if verbosity:
