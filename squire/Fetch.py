@@ -426,8 +426,8 @@ def main(**kwargs):
         if verbosity:
             print("Converting RefGene file to Bed ..." + "\n", file = sys.stderr)
         refGene_Bed=outfolder + "/" + build + "_refGene.bed"
-        #genepred_to_bed(refGene_genepred,refGene_Bed,outfolder)
-        gtf_to_bed(refGene_gtf,refGene_Bed)
+        genepred_to_bed(refGene_genepred,refGene_Bed,outfolder)
+
         if verbosity:
             print("Finished converting RefGene file to Bed ..." + "\n", file = sys.stderr)
 
