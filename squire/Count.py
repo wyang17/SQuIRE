@@ -1560,9 +1560,8 @@ def main(**kwargs):
 	Stringtie(bamfile,outfolder,basename,strandedness,pthreads,ingtf, verbosity,outgtf_ref_temp) 
 	sort_coord(outgtf_ref_temp,outgtf_ref,1,4,debug)
 	sort_coord(abund_ref_temp,abund_ref,3,5,debug)	       
-	gene_dict={}
-	filter_abund(abund_ref,gene_dict,False)
-
+	genename_dict={}
+	filter_abund(abund_ref,genename_dict,False, read_length)
 	genecounts=outfolder + "/" + basename + "_refGenecounts.txt"
 	filter_tx(outgtf_ref, genename_dict,read_length,genecounts)
 	if not debug:
