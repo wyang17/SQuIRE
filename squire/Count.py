@@ -1422,6 +1422,15 @@ def sort_coord(infile, outfile,chrcol,startcol,debug):
 	if not debug:
 		os.unlink(infile)
 
+def sort_coord_header(infile, outfile,chrcol,startcol,debug):
+	chrfieldsort = "-k" + str(chrcol) + "," + str(chrcol)
+	startfieldsort = "-k" + str(startcol) + "," + str(startcol) + "n"
+	sort_command_list = ["(head -n 2", infile,"&& tail -n +3", infile, "|", "sort",chrfieldsort,startfieldsort, ")", ">", outfile]
+	sort_command = " ".join(sort_command_list)
+	sp.check_call(["/bin/sh", "-c", sort_command])
+	if not debug:
+		os.unlink(infile)
+
 def sort_counts(tempfile,headerfile,countsfile, field,debug):
 	sorted_countsfile = tempfile + ".sorted"
 	field_command = str(field) + "," + str(field) + "rn"
@@ -1559,14 +1568,12 @@ def main(**kwargs):
 	abund_ref_temp = outgtf_ref_temp.replace("outgtf","outabund")
 	Stringtie(bamfile,outfolder,basename,strandedness,pthreads,ingtf, verbosity,outgtf_ref_temp) 
 	sort_coord(outgtf_ref_temp,outgtf_ref,1,4,debug)
-	sort_coord(abund_ref_temp,abund_ref,3,5,debug)	       
+	sort_coord_header(abund_ref_temp,abund_ref,3,5,debug)	       
 	genename_dict={}
 	filter_abund(abund_ref,genename_dict,False)
 	genecounts=outfolder + "/" + basename + "_refGenecounts.txt"
 	filter_tx(outgtf_ref, genename_dict,read_length,genecounts)
-	if not debug:
-		os.unlink(outgtf_ref_temp)
-		os.unlink(abund_ref_temp)		
+
 
 	#### OPEN OUTPUTS & WRITE HEADER INFORMATION#############
 	if verbosity:
