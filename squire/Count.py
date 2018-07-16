@@ -375,9 +375,10 @@ def reduce_reads(read_file,new_readfile,debug):
 						prev= current
 						prev_TE_ID = current.TE_ID
 	#end of loop
-			prev.line_split[15]  = prev_TE_ID
-			prev.line = "\t".join(prev.line_split)
-			outfile.writelines(prev.line + "\n")
+			if prev:
+				prev.line_split[15]  = prev_TE_ID
+				prev.line = "\t".join(prev.line_split)
+				outfile.writelines(prev.line + "\n")
 	if not debug:
 		os.unlink(read_file)
 
