@@ -24,7 +24,7 @@ source activate $virtual_env
 
 # Run SQuIRE Call
 echo 'Running Call'
-if squire Call --group1 $group1 --group2 $group2 --condition1 $condition1 --condition2 $condition2 --projectname $projectname --pthreads $pthreads --output_format $output_format  --call_folder $call_folder $verbosity
+if squire Call --group1 $group1 --group2 $group2 --condition1 $condition1 --condition2 $condition2 --projectname $projectname --pthreads $pthreads --output_format $output_format  --count_folder $count_folder --call_folder $call_folder $verbosity
 then
   echo 'squire Call is complete'
 fi

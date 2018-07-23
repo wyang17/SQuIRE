@@ -35,7 +35,7 @@ then
   EM="auto"
 fi
 
-squire Count --map_folder $map_folder --clean_folder $clean_folder --count_folder $count_folder --temp_folder $temp_folder --name $name --build $build --strandedness $strandedness --EM $EM $verbosity
+squire Count --map_folder $map_folder --clean_folder $clean_folder --count_folder $count_folder --temp_folder $temp_folder --name $name --build $build --strandedness $strandedness --EM $EM $verbosity --fetch_folder $fetch_folder
 
 
 echo 'Count Complete on' `date`

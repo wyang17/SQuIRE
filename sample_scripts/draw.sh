@@ -25,7 +25,7 @@ source activate $virtual_env
 
 # Run SQuIRE Draw
 echo 'Running Draw'
-if squire Draw --map_folder $map_folder --draw_folder $draw_folder --name $basefile --normlib $normlib --pthreads $pthreads --strandedness $strandedness $verbosity
+if squire Draw --map_folder $map_folder --draw_folder $draw_folder --name $basefile --normlib $normlib --pthreads $pthreads --strandedness $strandedness $verbosity --build $build --fetch_folder $fetch_folder
 then
   echo 'Draw is complete'
 fi

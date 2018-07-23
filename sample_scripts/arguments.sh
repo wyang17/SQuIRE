@@ -75,5 +75,5 @@ clean_folder=squire_clean
 map_folder=squire_map
 count_folder=squire_count
 draw_folder=squire_draw
-call_folder=squire_call
+call_folder=squire_call${projectname}
 seek_folder=squire_seek
