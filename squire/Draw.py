@@ -18,7 +18,7 @@ from collections import defaultdict #for dictionary
 import glob
 import re
 from six import itervalues
-import shutil
+import shutil 
 
 
 def find_file(folder,pattern,base, wildpos):

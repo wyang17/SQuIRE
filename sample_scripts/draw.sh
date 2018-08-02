@@ -6,9 +6,9 @@
 ######################################################
 
 #! /bin/bash
-#$ -l mem_free=2G
-#$ -l h_vmem=2G
-#$ -pe local 8
+#$ -l mem_free=8G
+#$ -l h_vmem=8G
+#$ -pe local 2
 #$ -l h_fsize=500G
 #$ -m e
 #$ -M squire@email.com
