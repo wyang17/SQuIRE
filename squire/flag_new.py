@@ -195,12 +195,23 @@ def Stringtie(bamfile,outfolder,basename,strandedness,read_length,pthreads,gtf, 
 	sp.check_call(["/bin/sh", "-c", StringTiecommand])
 
 
-def sort_coord(infile, outfile,chrcol,startcol):
+def sort_coord(infile, outfile,chrcol,startcol, debug):
 	chrfieldsort = "-k" + str(chrcol) + "," + str(chrcol)
 	startfieldsort = "-k" + str(startcol) + "," + str(startcol) + "n"
 	sort_command_list = ["sort",chrfieldsort,startfieldsort, infile, ">", outfile]
 	sort_command = " ".join(sort_command_list)
 	sp.check_call(["/bin/sh", "-c", sort_command])
+	if not debug:
+		os.unlink(infile)
+
+def sort_coord_header(infile, outfile,chrcol,startcol,debug):
+	chrfieldsort = "-k" + str(chrcol) + "," + str(chrcol)
+	startfieldsort = "-k" + str(startcol) + "," + str(startcol) + "n"
+	sort_command_list = ["(head -n 2", infile,"&& tail -n +3", infile, "|", "sort",chrfieldsort,startfieldsort, ")", ">", outfile]
+	sort_command = " ".join(sort_command_list)
+	sp.check_call(["/bin/sh", "-c", sort_command])
+	if not debug:
+		os.unlink(infile)
 
 def sort_counts(tempfile,headerfile,countsfile, field,debug):
 	sorted_countsfile = tempfile + ".sorted"
@@ -273,8 +284,7 @@ def filter_TE(infile,TE_strandfile,tx_strandfile,strandedness):
 		TEout.close()
 		txout.close()
 
-
-class gene_info(object):
+class abund_line(object):
 	def __init__(self,line):
 		self.Gene_ID = line[0]
 		self.Gene_name = line[1]
@@ -285,35 +295,8 @@ class gene_info(object):
 		self.coverage = float(line[6])
 		self.fpkm = float(line[7])
 		self.tpm = float(line[8])
-		self.counts=0
-		self.tx_IDs=set()
-		self.tx_ID_string=",".join(self.tx_IDs)
-		self.flagout=[self.Gene_ID,self.fpkm,self.counts]
-		self.countsout=[self.chrom,self.start,self.stop,self.Gene_ID,int(self.counts),self.strand,self.tx_ID_string]
-	def add_counts(self,counts):
-		self.counts += counts        
-	def add_tx(self,txID):
-		self.tx_IDs.add(txID)
-		self.tx_ID_string=",".join(self.tx_IDs)
-		self.flagout = [self.Gene_ID,self.fpkm,self.counts]
-		self.countsout = [self.chrom,self.start,self.stop,self.Gene_ID,int(round(self.counts)),self.strand,self.tx_ID_string]
 
 
-def filter_abund(infile,gene_dict,notinref_dict):
-	with open(infile,'r') as filterin:        
-		for line in filterin:
-			line = line.rstrip()
-			line = line.split("\t")
-			if "Gene" in line[0] and "TPM" in line[-1]:
-				continue
-			gene_data=gene_info(line)          
-			if not notinref_dict:
-				gene_dict[(gene_data.Gene_ID,gene_data.strand)] = gene_data
-			else:
-				if gene_data.Gene_ID in notinref_dict:
-					gene_dict[(gene_data.Gene_ID,gene_data.strand)] = gene_data
-
-			
 class gtfline(object):
 	def __init__(self,line):
 		self.line=line
@@ -326,6 +309,9 @@ class gtfline(object):
 		self.strand  = line[6]
 		self.frame=line[7]
 		self.attributes=line[8].split("; ")
+		self.fpkm=0
+		self.coverage=0
+		self.tpm=0
 		for attribute_pair in self.attributes:
 			self.attribute = attribute_pair.replace(" ","").split('"')
 			if self.attribute[0]=="FPKM":
@@ -345,6 +331,60 @@ class gtfline(object):
 		attributesout = self.attributes= "; ".join(self.attributes)
 		gtfout = [self.chrom,self.source,self.category,self.start+1,self.stop,self.score,self.strand,self.frame,attributesout]
 		self.gtfout = [str(i) for i in gtfout]
+
+
+class gene_info(object):
+	def __init__(self,geneinfo):
+		self.Gene_ID = geneinfo.Gene_ID
+		self.chrom = geneinfo.chrom
+		self.strand  = geneinfo.strand
+		self.start = geneinfo.strand
+		self.stop = geneinfo.stop
+		self.coverage = 0
+		self.fpkm = 0
+		self.tpm = 0
+		self.counts=0
+		self.tx_IDs=set()
+		self.tx_ID_string=",".join(self.tx_IDs)
+		self.flagout=[self.Gene_ID,self.fpkm,self.counts]
+		self.countsout=[self.chrom,self.start,self.stop,self.Gene_ID,int(self.counts),self.strand,self.tx_ID_string]
+	def add_counts(self,counts):
+		self.counts += counts 
+	def add_expression(self,geneinfo):
+		self.coverage = geneinfo.coverage
+		self.fpkm = geneinfo.fpkm
+		self.tpm = geneinfo.tpm       
+	def add_tx(self,txID):
+		self.tx_IDs.add(txID)
+		self.tx_ID_string=",".join(self.tx_IDs)
+		self.flagout = [self.Gene_ID,self.fpkm,self.counts]
+		self.countsout = [self.chrom,self.start,self.stop,self.Gene_ID,int(round(self.counts)),self.strand,self.tx_ID_string]
+
+
+def filter_abund(infile,gene_dict,notinref_dict):
+	with open(infile,'r') as filterin:        
+		for line in filterin:
+			line = line.rstrip()
+			line = line.split("\t")
+			if "Gene" in line[0] and "TPM" in line[-1]: #skip header
+				continue
+			abund_info=abund_line(line)          
+			gene_data = gene_info(abund_info)
+			if (gene_data.Gene_ID,gene_data.strand) not in gene_dict:
+				gene_dict[(gene_data.Gene_ID,gene_data.strand)] = gene_data
+				gene_dict[(gene_data.Gene_ID,gene_data.strand)].add_expression(abund_info)
+			else:
+				gene_dict[(gene_data.Gene_ID,gene_data.strand)].add_expression(abund_info)
+			# if not notinref_dict: #refGene data
+			# 	gene_dict[(gene_data.Gene_ID,gene_data.strand)] = gene_data
+			# 	gene_dict[(gene_data.Gene_ID,gene_data.strand)].add_expression(abund_info)
+			# else:
+			# 	if gene_data.Gene_ID in notinref_dict:
+			# 		gene_dict[(gene_data.Gene_ID,gene_data.strand)] = gene_data
+			# 		gene_dict[(gene_data.Gene_ID,gene_data.strand)].add_expression(abund_info)
+
+			
+
 
 
 def filter_tx(infile,gene_bed,genefile,tx_gene_dict,gene_dict,read_length,genebeddict):    
@@ -371,12 +411,18 @@ def filter_tx(infile,gene_bed,genefile,tx_gene_dict,gene_dict,read_length,genebe
 				if gtf_line.category=="exon":  
 					transcribed_length=int(gtf_line.stop) - int(gtf_line.start)                        
 					counts = gtf_line.coverage*transcribed_length/int(read_length)
-					if counts > 0:
+					if (gtf_line.Gene_ID,gtf_line.strand) in gene_dict:
 						gene_dict[(gtf_line.Gene_ID,gtf_line.strand)].add_counts(counts)  
 						gene_dict[(gtf_line.Gene_ID,gtf_line.strand)].add_tx(gtf_line.transcript_id)    
 						tx_gene_dict[gtf_line.transcript_id].add((gtf_line.Gene_ID,gtf_line.strand))
+					else:
+						gene_data=gene_info(gtf_line)
+						gene_dict[(gtf_line.Gene_ID,gtf_line.strand)] = gene_data
+						gene_dict[(gtf_line.Gene_ID,gtf_line.strand)].add_counts(counts)  
+						gene_dict[(gtf_line.Gene_ID,gtf_line.strand)].add_tx(gtf_line.transcript_id)    
+						tx_gene_dict[gtf_line.transcript_id].add((gtf_line.Gene_ID,gtf_line.strand))						
 				if gtf_line.category=="transcript" and  len(line) == 9 and genefile:
-					if float(gtf_line.fpkm) > 0 or float(gtf_line.tpm) > 0:
+					if (float(gtf_line.fpkm) > 0 or float(gtf_line.tpm) > 0) and gtf_line.transcript_id in genebeddict:
 						bedline=genebeddict[gtf_line.transcript_id]
 						geneout.writelines("\t".join(bedline) + "\n")
 			else:
@@ -503,6 +549,7 @@ def get_gtf_table(outfolder,outgtf,filename):
 	gtf_list.close()
 	return  gtf_table
 
+
 def find_splice_sites(gtf_file,start_dict,stop_dict):       
 	with open(gtf_file,'r') as infile:
 		for line in infile:
@@ -586,6 +633,7 @@ def find_spliced_TEs(spliced_file,splicedTE_dict,splice_site_dict):
 			else:
 				splicedTE_dict[(TE_ID,TE_strand)].add((splice_ID,True))  
 
+
 def get_exons(gtf,exonfile):
 	exonfile_presort=exonfile+"pre"
 	awk_list = ["awk","-v", "OFS='\\t'", """'$3=="exon"'""",gtf,">",exonfile_presort]
@@ -594,31 +642,30 @@ def get_exons(gtf,exonfile):
 	sort_coord(exonfile_presort,exonfile,1,4)
 	os.unlink(exonfile_presort)
 
+
 def get_exp_TE(TEfile,expfile):
-	awk_list = ["awk","-v", "OFS='\\t'", """'$5 > 0.01 && $8 > 5'""",TEfile,">",expfile]
+	awk_list = ["awk","-v", "OFS='\\t'", """'$5 > 0.1 '""",TEfile,">",expfile]
 	awk_command = " ".join(awk_list)
 	sp.check_call(["/bin/sh", "-c", awk_command]) 
 
 
 def tx_loop(outdis,gene_dict,tx_gene_dict,splicedTE_dict,splice_site_dict,merged_dict,basename,strandedness,tempflag):
 	flagout=open(tempflag,'w')
-	merged_out = ["contigID","TE_subfamilies","merged_counts", "merged_pos"]  #4                 
-	flag_out = ["transcript_label","spliced"] #2
+	merged_out = ["contigID","TE_subfamilies","TE_counts", "percent_TE_cov", "contig_counts", "contig_positions", "contig_init"]  #7
+	flag_out = ["spliced","transcript_label"] #2
 	TE_out=["tx_chr","tx_start","tx_stop","TE_ID","TE_fpkm","tx_strand","unique_counts", "TE_counts","aligned_reads","TE_score"] #10
 	rel_gene_out = ["sense_dis"," sense_pos"," sense_init", "sense_fpkm", "antisense_dis","antisense_pos","antisense_init", "antisense_fpkm",] #8
 	header_list = TE_out + rel_gene_out +  merged_out + flag_out
 	header = "\t".join(header_list)
 	flagout.writelines(header + "\n")
 	TE_dict={}
-	extra_list=[]
+	extra_dict={}
 	with open(outdis,'r') as infile:        
 		for line in infile:
 			line=line.rstrip().split("\t")
 			if line[10]==".":
-				if (line[3],line[5]) not in extra_list:
-					extra_list.append((line[3],line[5]))
-					extra_out = line[0:10] + ["."]*14
-					flagout.writelines("\t".join(extra_out) + "\n")
+				if (line[3],line[5]) not in extra_dict: #store lines with no data
+					extra_list[(line[3],line[5])] = line[0:10] + ["."]*17				
 				continue        
 			tx_class = tx_line(line,tx_gene_dict,gene_dict)                
 			if (tx_class.TE_ID,tx_class.TE_strand) in merged_dict:
@@ -642,8 +689,13 @@ def tx_loop(outdis,gene_dict,tx_gene_dict,splicedTE_dict,splice_site_dict,merged
 			merged = merged_dict[TE]
 		else:
 			merged = False
+		if TE in extra_dict:
+			del extra_dict[TE]
 		allinfo.label_transcript(tx_gene_dict,gene_dict,merged,filename,flagout)
-	flagout.close()
+	for TE_strand, extra_out in extra_dict:
+		flagout.writelines("\t".join(extra_out) + "\n")
+	flagout.close()	
+
 
 class bedline(object):
 	def __init(self,line):
@@ -661,6 +713,7 @@ class bedline(object):
 		self.tx_exon_starts = line[11].split(",")
 		self.tx_distance = int(line[12]) 
 
+
 def filter_bed(bedfile,outfile):
 	with open(bedfile,'r') as infile:
 		for line in infile:
@@ -668,6 +721,7 @@ def filter_bed(bedfile,outfile):
 			bed_line=bedline(line)
 			if bed_line.tx_exon_count == 1: 
 				pass
+
 
 class tx_line(object):
 	def __init__(self,line,tx_gene_dict,gene_dict):
@@ -801,6 +855,7 @@ def label_files(file_in,file_out, string,debug):
 	if not debug:
 		os.unlink(file_in)
 
+
 def simplify_info(geneinfo_dict):
 	genevaluelist=[]
 	if not geneinfo_dict:
@@ -879,10 +934,12 @@ class mergedTE_info(object):
 		sorted_TE_IDs = set(sorted(self.contig_TE_IDs, key=lambda TE_ID: int(TE_ID.split("|")[1])))
 		self.TE_count = len(sorted_TE_IDs) 
 		TE_coverage=0       
+		self.TE_lenstart=self.TE_start
+		self.TE_lenstop = self.TE_stop
 		for TE_ID in self.contig_TE_IDs:
 			TE_info=TE_ID.split("|")
-			TE_start=TE_info[1]
-			TE_stop = TE_info[2]
+			self.TE_lenstart=min(int(TE_info[1]),self.TE_lenstart)
+			self.TE_len_stop = max(int(TE_info[2]),self.TE_lenstop)
 			TE_taxo = TE_info[3]
 			TE_family=TE_taxo.split(":")[1]
 			TE_order=TE_taxo.split(":")[2]
@@ -891,7 +948,7 @@ class mergedTE_info(object):
 			self.family_set.add(TE_family)
 			self.order_set.add(TE_order)
 			self.strand_set.add(TE_strand) 
-			TE_length=TE_stop - TE_start
+			TE_length=self.TE_lenstop - self.TE_lenstart
 			TE_coverage += TE_length
 		self.contig_length = self.contig_stop - self.contig_start            
 		self.pct_TE_cov = TE_coverage / self.contig_length * 100
@@ -910,7 +967,7 @@ class mergedTE_info(object):
 			else:
 				self.merged_type = "ITL"      
 		#set TE info 
-		self.taxo_set_out = ",".join([str(i) for i in self.taxo_set])        
+		self.taxo_set_out = ",".join([str(i) for i in self.taxo_set])
 		if len(self.contig_TE_IDs)>1:
 			self.mergedID = self.contig_TE_IDs[0] +":" + self.contig_TE_IDs[-1]  + ":" + self.contig_strand
 		else:
@@ -918,7 +975,8 @@ class mergedTE_info(object):
 		self.contig_TE_start=self.contig_TE_IDs[0].split("|")[1]
 		self.contig_TE_stop=self.contig_TE_IDs[-1].split("|")[2]
 		self.merged_positions = simplify_info(self.sense_pos)         
-		self.merged_out = [self.contig_start,self.contig_stop,self.contig_ID,self.taxo_set_out, self.TE_count, self.pct_TE_cov, self.contig_counts,self.merged_positions]
+		self.merged_out = [self.contig_ID,self.taxo_set_out, self.TE_count, self.pct_TE_cov, self.contig_counts,self.merged_positions]
+
 
 class merged_exon(object):
 	def __init__(self,line):
@@ -927,6 +985,7 @@ class merged_exon(object):
 		self.stop = int(line[2])
 		self.name=(line[4])
 		self.strand  = line[5]
+
 
 def replace_geneid(self,newgeneid):
 	newgeneid=[str(x) for x in newgeneid]        
@@ -1214,7 +1273,7 @@ class TE_allinfo(object):
 			else:
 				self.length_start = self.tx_start
 			if self.start_flanked and self.stop_flanked:
-				self.biflanked = True  
+				self.biflanked = True 
 		if self.exon_tx: 
 			if not any(basename in tx_ID for tx_ID in self.exon_tx):
 				self.transcript_label = "RefGene"            
@@ -1235,21 +1294,23 @@ class TE_allinfo(object):
 			self.transcript_label = "ITL"
 		else:
 			self.transcript_label = "low_exp"
-		flag_out = [self.transcript_label]
-		gene_out = []
-		gene_out.append(simplify_info(self.sense_dis))
-		gene_out.append(simplify_info(self.sense_pos))
-		gene_out.append(simplify_info_bool(self.sense_init))        
-		gene_out.append(simplify_info(self.sense_fpkm))
-		gene_out.append(simplify_info(self.antisense_dis))
-		gene_out.append(simplify_info(self.antisense_pos))
-		gene_out.append(simplify_info_bool(self.antisense_init))          
-		gene_out.append(simplify_info(self.antisense_fpkm))        
+		self.flag_out = [self.transcript_label]
+		self.gene_out = []
+		self.gene_out.append(simplify_info(self.sense_dis))
+		self.gene_out.append(simplify_info(self.sense_pos))
+		self.gene_out.append(simplify_info_bool(self.sense_init))        
+		self.gene_out.append(simplify_info(self.sense_fpkm))
+		self.gene_out.append(simplify_info(self.antisense_dis))
+		self.gene_out.append(simplify_info(self.antisense_pos))
+		self.gene_out.append(simplify_info_bool(self.antisense_init))          
+		self.gene_out.append(simplify_info(self.antisense_fpkm))
+		if not self.gene_out:
+			self.gene_out=["."]*8
 		if self.mergedinfo:
 			self.merged_out=self.mergedinfo.merged_out
 		else:
-			self.merged_out = ["."]*6     
-		outline =  self.TE_out  + gene_out + self.merged_out + [str(self.merged_init)] + self.spliced_out + flag_out 
+			self.merged_out = ["."]*7
+		outline =  self.TE_out  + self.gene_out + self.merged_out + [str(self.merged_init)] + self.spliced_out + self.flag_out 
 		stringout = [str(i) for i in outline]
 		outfile.writelines("\t".join(stringout) + "\n")
 
@@ -1361,339 +1422,344 @@ def main(**kwargs):
 	strandedness=args.strandedness
 	build = args.build
 
-######### StringTieT TIMING SCRIPT ############
-if verbosity:
-	StringTieTime = datetime.now()
-	print("Script start time is:" + str(StringTieTime) + '\n', file = sys.stderr)# Prints StringTiet time
-	print(os.path.basename(__file__) + '\n', file = sys.stderr) #prints script name to std err
-	print("Script Arguments" + '\n' + "=================", file = sys.stderr)
-	args_dict = vars(args)
-	for option,arg in args_dict.iteritems():
-		print(str(option) + "=" + str(arg), file = sys.stderr) #prints all arguments to std err
-	print("\n", file = sys.stderr)
-make_dir(outfolder)
-debug = True
-if debug:
+	######### StringTieT TIMING SCRIPT ############
+	if verbosity:
+		StringTieTime = datetime.now()
+		print("Script start time is:" + str(StringTieTime) + '\n', file = sys.stderr)# Prints StringTiet time
+		print(os.path.basename(__file__) + '\n', file = sys.stderr) #prints script name to std err
+		print("Script Arguments" + '\n' + "=================", file = sys.stderr)
+		args_dict = vars(args)
+		for option,arg in args_dict.iteritems():
+			print(str(option) + "=" + str(arg), file = sys.stderr) #prints all arguments to std err
+		print("\n", file = sys.stderr)
+	make_dir(outfolder)
 	debug = True
+	if debug:
+		debug = True
 
-if not tempfolder:
-	tempfolder=outfolder
+	if not tempfolder:
+		tempfolder=outfolder
 
-##### GET INPUTS ####
-bamfile = find_file(map_folder, ".bam",filename,1)
-if not bamfile:
-	raise Exception ("Bamfile with " + filename + " not found in " + map_folder + "\n")
+	##### GET INPUTS ####
+	bamfile = find_file(map_folder, ".bam",filename,1)
+	if not bamfile:
+		raise Exception ("Bamfile with " + filename + " not found in " + map_folder + "\n")
 
-countfile = find_file(count_folder,"_counts.txt",filename,1)
-if not countfile:
-	raise Exception ("countfile with " + filename + " not found in" + count_folder + "\n") 
+	countfile = find_file(count_folder,"_counts.txt",filename,1)
+	if not countfile:
+		raise Exception ("countfile with " + filename + " not found in" + count_folder + "\n") 
 
-plus_bedgraph = find_file(draw_folder,"_plus_multi.bedgraph",filename,1)
-minus_bedgraph= find_file(draw_folder,"_minus_multi.bedgraph",filename,1)
-unstranded_bedgraph=False
-if not plus_bedgraph and not minus_bedgraph:
-	unstranded_bedgraph = find_file(draw_folder,"_multi.bedgraph",filename,1)
+	plus_bedgraph = find_file(draw_folder,"_plus_multi.bedgraph",filename,1)
+	minus_bedgraph= find_file(draw_folder,"_minus_multi.bedgraph",filename,1)
+	unstranded_bedgraph=False
+	if not plus_bedgraph and not minus_bedgraph:
+		unstranded_bedgraph = find_file(draw_folder,"_multi.bedgraph",filename,1)
 
-if not unstranded_bedgraph:
-	raise Exception ("bedgraphs with " + filename + " not found in" + draw_folder + "\n")   
+	if not unstranded_bedgraph:
+		raise Exception ("bedgraphs with " + filename + " not found in" + draw_folder + "\n")   
 
-if not plus_bedgraph:
-	raise Exception ("countfile with " + filename + " not found in" + count_folder + "\n")     
+	if not plus_bedgraph:
+		raise Exception ("countfile with " + filename + " not found in" + count_folder + "\n")     
 
-gtf = find_file(fetch_folder,"_refGene.gtf",build,1)
-outgtf_ref = find_file(count_folder,".gtf",filename,1)
-if not gtf:
-	raise Exception ("gtffile with " + filename + " not found in" + fetch_folder + "\n")    
+	gtf = find_file(fetch_folder,"_refGene.gtf",build,1)
+	outgtf_ref = find_file(count_folder,".gtf",filename,1)
+	if not gtf:
+		raise Exception ("gtffile with " + filename + " not found in" + fetch_folder + "\n")    
 
 
-genebed = find_file(fetch_folder,"_refGene.bed",build,1)
+	genebed = find_file(fetch_folder,"_refGene.bed",build,1)
 
-if not genebed:
-	raise Exception ("bedfile with " + filename + " not found in"  + fetch_folder + "\n")    
+	if not genebed:
+		raise Exception ("bedfile with " + filename + " not found in"  + fetch_folder + "\n")    
 
-splice_file=find_file(map_folder, "SJ.out.tab",filename,1)
+	splice_file=find_file(map_folder, "SJ.out.tab",filename,1)
 
-if not splice_file:
-	raise Exception ("SJ.out.tab file with " + filename + " not found in"  + map_folder+ "\n")  
+	if not splice_file:
+		raise Exception ("SJ.out.tab file with " + filename + " not found in"  + map_folder+ "\n")  
 
-chrominfo = find_file(fetch_folder,"_chromInfo.txt",build,1)     
+	chrominfo = find_file(fetch_folder,"_chromInfo.txt",build,1)     
 
-####PREPARE STRINGTIE#####
+	####PREPARE STRINGTIE#####
 
-#unguided stringtie
-outgtf_noref =make_tempfile(filename, "outgtf_noref_sorted", tempfolder)
-abund_noref =outgtf_noref.replace("outgtf","outabund")
-outgtf_noref_temp =  make_tempfile(filename, "outgtf_noref", tempfolder)
-abund_noref_temp = outgtf_noref_temp.replace("outgtf","outabund")
+	#unguided stringtie
+	outgtf_noref =make_tempfile(filename, "outgtf_noref_sorted", tempfolder)
+	abund_noref =outgtf_noref.replace("outgtf","outabund")
+	outgtf_noref_temp =  make_tempfile(filename, "outgtf_noref", tempfolder)
+	abund_noref_temp = outgtf_noref_temp.replace("outgtf","outabund")
 
-Stringtie(bamfile,outfolder,filename,strandedness,read_length,pthreads,False, verbosity,outgtf_noref_temp)
-sort_coord(outgtf_noref_temp,outgtf_noref,1,4)
-sort_coord(abund_noref_temp,abund_noref,3,5)    
+	Stringtie(bamfile,outfolder,filename,strandedness,read_length,pthreads,False, verbosity,outgtf_noref_temp)
+	sort_coord(outgtf_noref_temp,outgtf_noref,1,4, debug)
+	sort_coord_header(abund_noref_temp,abund_noref,3,5, debug)    
 
-
-if verbosity:
-	print("Comparing guided and unguided transcripts for " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
-
-#filter_tx - find genes with any exons that don't overlap with reference
-exon_ref = make_tempfile(filename, "exon_ref", tempfolder)
-exon_noref = make_tempfile(filename, "exon_noref", tempfolder)
-exons_notinref = make_tempfile(filename, "exons_notinref", tempfolder)
-exons_inref = make_tempfile(filename, "exons_inref", tempfolder)
-
-gtf_notinref = make_tempfile(filename, "gtf_notinref", tempfolder)
-gtfvsref = make_tempfile(filename, "gtfvsref", tempfolder)
-gtf_inref = make_tempfile(filename, "gtf_inref", tempfolder)
-
-get_exons(outgtf_ref,exon_ref)
-get_exons(outgtf_noref,exon_noref)
-
-
-intersect_wawb(outgtf_noref,exon_ref,gtfvsref,strandedness)
-intersect_not(outgtf_noref,exon_ref,exons_notinref,strandedness)
-inrefdict={}
-notinref_dict = set()
-compare_exons(gtfvsref,inrefdict)
-contrast_exons(exons_notinref,notinref_dict)
-
-find_inref(gtfvsref,inrefdict,notinref_dict,gtf_inref)
-find_notinref(outgtf_noref,notinref_dict,gtf_notinref)
-
-gene_dict={}
-
-genebeddict={}
-if verbosity:
-	print("Getting gene counts and transcript information for " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
-
-
-#filter_abund - add to gene_dict guided
-filter_abund(abund_ref,gene_dict,False)
-filter_abund(abund_noref,gene_dict,notinref_dict)
-
-
-exp_bed = make_tempfile(filename, "exp_bed", tempfolder)
-exp_bed_sorted = make_tempfile(filename, "exp_bed_sorted", tempfolder)
-
-tx_gene_dict=defaultdict(set)
-	#calculcate coverage and match transcript ids to gene ids, output exp_bed
-
-filter_tx(outgtf_ref,genebed, False,tx_gene_dict,gene_dict,read_length,genebeddict)
-filter_tx(gtf_notinref,genebed, False,tx_gene_dict,gene_dict,read_length,genebeddict)
-filter_tx(gtf_inref,genebed, False,tx_gene_dict,gene_dict,read_length,genebeddict)
-
-#gtf to bed 
-outbed_noref= make_tempfile(filename, "outbed_noref", tempfolder)
-gtf_to_bed(outgtf_noref,outbed_noref,debug)
-outgtf_multiexon = make_tempfile(filename, "outgtf_multiexon", tempfolder)
-filter_single_exon_genes(exon_noref,outgtf_multiexon)
-
-
-all_exons = make_tempfile(filename, "all_exons", tempfolder)
-all_exons_sorted = make_tempfile(filename, "all_exons", tempfolder)
-all_exons_merged = make_tempfile(filename, "all_exons_merged", tempfolder)
-
-combine_files(exon_ref,outgtf_multiexon,all_exons,debug)
-sort_coord(all_exons,all_exons_sorted,1,4)
-
-splice_start = make_tempfile(filename, "splice_start", tempfolder)
-splice_stop = make_tempfile(filename, "splice_stop", tempfolder)
-spliced_TE = make_tempfile(filename, "spliced_TE", tempfolder)
-spliced_TE_start = make_tempfile(filename, "spliced_TE_start", tempfolder)
-spliced_TE_stop = make_tempfile(filename, "spliced_TE_stop", tempfolder)
-splice_start_sorted = make_tempfile(filename, "spliced_start_sorted", tempfolder)
-splice_stop_sorted = make_tempfile(filename, "spliced_stop_sorted", tempfolder)
-spliced_TE_sorted = make_tempfile(filename, "spliced_TE_sorted", tempfolder)
-start_dict=defaultdict(set)
-stop_dict=defaultdict(set)
-find_splice_sites(gtf,start_dict,stop_dict)
-filter_splice(splice_file,splice_start,splice_stop,start_dict,stop_dict) #convert coordinates of introns into bed format
-sort_coord(splice_start,splice_start_sorted,1,2)     
-sort_coord(splice_stop,splice_stop_sorted,1,2)      
-spliced_TE_sorted = outfolder + "/" + filename + "_spliced_TEs.txt"
-
-
-
-merge(all_exons_sorted,all_exons_merged,0,strandedness,["-c 7,3,5","-o distinct,distinct,sum"])
-interexon_exp_bed= make_tempfile(filename, "interexon_exp" + "bed", tempfolder)
-interexon_exp_bed_sorted= make_tempfile(filename, "interexon_exp_sorted" + "bed", tempfolder)
-if strandedness > 0:
-	strand="+"
-	filtered_bedgraph_plus =make_tempfile(filename, "filtered_bedgraph" + "_" + strand, tempfolder)
-	filtered_bed_plus =make_tempfile(filename, "filtered_bed" + "_" + strand, tempfolder)
-	intron_exp_plus = make_tempfile(filename, "intron_exp" + "_" + strand, tempfolder)
-	interexon_exp_plus= make_tempfile(filename, "interexon_exp" + "_" + strand, tempfolder)
-	intron_exp_spliced_start_plus= make_tempfile(filename, "intron_exp_spliced_start" + "_" + strand, tempfolder)
-	intron_exp_spliced_stop_plus= make_tempfile(filename, "intron_exp_spliced_stop" + "_" + strand, tempfolder)
-	eval_intron(plus_bedgraph,all_exons_merged,strand, filename,tempfolder,splice_start_sorted,splice_stop_sorted, filtered_bedgraph_plus,filtered_bed_plus, intron_exp_plus,interexon_exp_plus, intron_exp_spliced_start_plus, intron_exp_spliced_stop_plus)
-	strand="-"
-	filtered_bedgraph_minus =make_tempfile(filename, "filtered_bedgraph" + "_" + strand, tempfolder)
-	filtered_bed_minus =make_tempfile(filename, "filtered_bed" + "_" + strand, tempfolder)
-	intron_exp_minus = make_tempfile(filename, "intron_exp" + "_" + strand, tempfolder)
-	interexon_exp_minus= make_tempfile(filename, "interexon_exp" + "_" + strand, tempfolder)
-	intron_exp_spliced_start_minus= make_tempfile(filename, "intron_exp_spliced_start" + "_" + strand, tempfolder)
-	intron_exp_spliced_stop_minus= make_tempfile(filename, "intron_exp_spliced_stop" + "_" + strand, tempfolder)
-	eval_intron(minus_bedgraph,all_exons_merged,strand, filename,tempfolder,splice_start_sorted,splice_stop_sorted, filtered_bedgraph_minus,filtered_bed_minus, intron_exp_minus,interexon_exp_minus, intron_exp_spliced_start_minus, intron_exp_spliced_stop_minus)
-	combine_files(filtered_bed_plus,filtered_bed_minus,interexon_exp_bed,debug) 
-	sort_coord(interexon_exp_bed,interexon_exp_bed_sorted,1,2)
-else:
-	strand="."
-	eval_intron(unstranded_bedgraph,all_exons_merged, strand, filename,tempfolder,splice_start_sorted,splice_stop_sorted)    
-
-
-	##### PREPARE TES #####
-		#filter_TE
-
-simple_TE = make_tempfile(filename, "simple_TE", tempfolder)
-simple_TE_sorted = make_tempfile(filename, "simple_TE_sorted", tempfolder)
-simple_tx = make_tempfile(filename, "simple_tx", tempfolder)
-simple_tx_sorted = make_tempfile(filename, "simple_tx_sorted", tempfolder)    
-exp_TE = make_tempfile(filename, "exp_TE", tempfolder)
-exp_TE_sorted = make_tempfile(filename, "exp_TE_sorted", tempfolder)   
-
-if verbosity:
-	print("Merging expressed TEs" + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
-filter_TE(countfile,simple_TE,simple_tx,strandedness)
-get_exp_TE(simple_tx,exp_TE)
-sort_coord(exp_TE,exp_TE_sorted,1,2)
-sort_coord(simple_TE,simple_TE_sorted,1,2)
-sort_coord(simple_tx,simple_tx_sorted,1,2)
-sort_coord(exp_bed,exp_bed_sorted,1,2)
-intersect_wawb(simple_TE_sorted, splice_start_sorted,spliced_TE_start,strandedness) #intersect TEs with intron
-intersect_wawb(simple_TE_sorted, splice_stop_sorted,spliced_TE_stop,strandedness)   
-combine_files(spliced_TE_start,spliced_TE_stop,spliced_TE,debug) 
-sort_coord(spliced_TE,spliced_TE_sorted,1,2)
-splicedTE_dict=defaultdict(set)
-splice_site_dict=defaultdict(set)
-find_spliced_TEs(spliced_TE_sorted,splicedTE_dict,splice_site_dict)
-
-#merge TE by 1000
-if verbosity:
-	print("Merging nearby expressed TEs for " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
-
-
-mergedTE_1kb = make_tempfile( filename, "mergedTE" + "_1kb", tempfolder)
-
-merge(exp_TE_sorted,mergedTE_1kb,1000,strandedness,["-c 6,4,8","-o distinct,collapse,sum"])
-
-mergedTE_5kb = make_tempfile( filename, "mergedTE" + "_5kb", tempfolder)
-
-merge(exp_TE_sorted,mergedTE_5kb,5000,strandedness,["-c 6,4,8","-o distinct,collapse,sum"])    
-
-
-if verbosity:
-	print("Comparing merged TE locations with expressed transcript exons" + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
-
-	#intersect merge with filtered TE
-TE_and_merged = make_tempfile( filename, "TE_and_merged", tempfolder)
-merged1andcontig = make_tempfile( filename, "merged1andcontig", tempfolder)
-merged_and_ref = make_tempfile( filename, "merged_and_ref", tempfolder)
-merged_and_noref = make_tempfile( filename, "merged_and_noref", tempfolder)    
-intersect_wawb(interexon_exp_bed_sorted,mergedTE_1kb,merged1andcontig,strandedness)
-intersect_wawb(simple_tx_sorted,merged1andcontig,TE_and_merged,strandedness)
-intersect_wawb(interexon_exp_bed_sorted,exon_ref,merged_and_ref,strandedness)
-intersect_wawb(interexon_exp_bed_sorted,exon_ref,merged_and_noref,strandedness)
-merged_dict={}
-get_mergedinfo(TE_and_merged,merged_dict,merged_and_ref,merged_and_noref)
-
-if verbosity:
-	print("Comparing TE locations with spliced intron locations " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
-
-	#find spliced TEs
-
-
-####COMBINE INFO ####
-#get closest sense 
-#merge single exon unguided transcripts
-if verbosity:
-	print("Finding closest sense gene " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
-sensedis_noref = make_tempfile(filename,"sensedis_noref",tempfolder)
-antisensedis_noref = make_tempfile(filename,"antisensedis_noref",tempfolder)
-noref_dis_unlabeled = make_tempfile(filename,"norefdis",tempfolder) 
-noref_dis = make_tempfile(filename,"norefdis",tempfolder) 
-
-closest_sense(simple_tx_sorted,outbed_noref,sensedis_noref,strandedness)
-closest_antisense(simple_tx_sorted,outbed_noref,antisensedis_noref,strandedness)
-combine_files(sensedis_noref,antisensedis_noref,noref_dis,debug) 
-#label_files(noref_dis_unlabeled,noref_dis,"noref",debug) 
-#get closest antisense     
-if verbosity:
-	print("Finding closest antisense gene " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
-
-sensedis_ref = make_tempfile(filename,"sensedis_ref",tempfolder)
-antisensedis_ref = make_tempfile(filename,"antisensedis_ref",tempfolder)
-ref_dis_unlabeled = make_tempfile(filename,"refdis",tempfolder) 
-ref_dis = make_tempfile(filename,"refdis",tempfolder) 
-
-closest_sense(simple_tx_sorted,genebed,sensedis_ref,strandedness)
-closest_antisense(simple_tx_sorted,genebed,antisensedis_ref,strandedness)
-combine_files(sensedis_ref,antisensedis_ref,ref_dis,debug) 
-#label_files(ref_dis_unlabeled,ref_dis,"ref",debug) 
-
-outdis = make_tempfile(filename,"outdis",tempfolder)
-combine_files(ref_dis,noref_dis,outdis,debug)
-
-# outdis_sorted = outdis + "_sorted"
-# sort_coord(outdis,outdis_sorted,1,2)
-#for each TE_gene intersection:
-if verbosity:
-	print("Flagging TEs  for " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)    
-
-tempflag = make_tempfile(filename,"flag",tempfolder)
-
-tx_loop(outdis,gene_dict,tx_gene_dict,splicedTE_dict,splice_site_dict,merged_dict,filename,strandedness,tempflag)
-flag_file =  outfolder + "/" + filename + "_flag.txt"
-### Write counts ###
-if verbosity:
-	print("Writing gene counts  for " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)    
-gene_file=outfolder + "/" + filename + "_gene_count.txt"
-gene_count = open(gene_file,'w')
-count_header = ["chr","start","stop","gene_ID","counts","strand","tx_IDs"]
-gene_count.writelines("\t".join(count_header) + "\n")
-for gene,geneinfo in gene_dict.iteritems():
-	stringout = [str(i) for i in geneinfo.countsout]
-	gene_count.writelines("\t".join(stringout) + "\n")
-
-
-gene_count.close()
-
-if not debug:
-	os.unlink(outgtf_ref_temp)
-	os.unlink(outgtf_noref_temp)    
-	os.unlink(abund_ref_temp)
-	os.unlink(abund_noref_temp)
-	os.unlink(exon_ref)
-	os.unlink(exon_noref)
-	os.unlink(exon_notinref)
-	os.unlink(inref)
-	os.unlink(gtf_notinref)
-	os.unlink(gtfvsref)
-	os.unlink(gtf_inref)
-	os.unlink(exp_bed)
-	os.unlink(exp_bed_sorted)
-	os.unlink(outbed_noref)
-	os.unlink(simple_TE)
-	os.unlink(simple_TE_sorted)
-	os.unlink(simple_tx)
-	os.unlink(simple_tx_sorted)
-	os.unlink(exp_TE)
-	os.unlink(exp_TE_sorted)
-	os.unlink(mergedTE_1kb)
-	os.unlink(mergedTE_1kb_bed)
-	os.unlink(TE_and_merged)
-	os.unlink(merged_and_ref)
-	os.unlink(merged_and_noref)
-	os.unlink(splice_bed)    
-	os.unlink(spliced_TE)
-	os.unlink(splice_bed_sorted)
-	os.unlink(sensedis_noref)
-	os.unlink(antisensedis_noref)
-	os.unlink(noref_dis_unlabeled)
-	os.unlink(noref_dis)
-	os.unlink(sensedis_ref)
-	os.unlink(antisense_ref)
-	os.unlink(ref_dis_unlabeled)
-	os.unlink(ref_dis)
-	os.unlink(outdis)    
-	os.unlink(tempflag)
+
+	if verbosity:
+		print("Comparing guided and unguided transcripts for " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
+
+	#filter_tx - find genes with any exons that don't overlap with reference
+	exon_ref = make_tempfile(filename, "exon_ref", tempfolder)
+	exon_noref = make_tempfile(filename, "exon_noref", tempfolder)
+	exons_notinref = make_tempfile(filename, "exons_notinref", tempfolder)
+	exons_inref = make_tempfile(filename, "exons_inref", tempfolder)
+
+	gtf_notinref = make_tempfile(filename, "gtf_notinref", tempfolder)
+	gtfvsref = make_tempfile(filename, "gtfvsref", tempfolder)
+	gtf_inref = make_tempfile(filename, "gtf_inref", tempfolder)
+
+	get_exons(outgtf_ref,exon_ref)
+	get_exons(outgtf_noref,exon_noref)
+
+
+	intersect_wawb(outgtf_noref,exon_ref,gtfvsref,strandedness)
+	intersect_not(outgtf_noref,exon_ref,exons_notinref,strandedness)
+	inrefdict={}
+	notinref_dict = set()
+	compare_exons(gtfvsref,inrefdict)
+	contrast_exons(exons_notinref,notinref_dict)
+
+	find_inref(gtfvsref,inrefdict,notinref_dict,gtf_inref)
+	find_notinref(outgtf_noref,notinref_dict,gtf_notinref)
+
+	gene_dict={}
+
+
+	if verbosity:
+		print("Getting gene counts and transcript information for " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
+
+
+	#filter_abund - add to gene_dict guided
+	filter_abund(abund_ref,gene_dict,False)
+	filter_abund(abund_noref,gene_dict,notinref_dict)
+
+
+	exp_bed = make_tempfile(filename, "exp_bed", tempfolder)
+	exp_bed_sorted = make_tempfile(filename, "exp_bed_sorted", tempfolder)
+
+	tx_gene_dict=defaultdict(set)
+		#calculcate coverage and match transcript ids to gene ids, output exp_bed
+	genebeddict={}
+	filter_tx(gtf,genebed, False,tx_gene_dict,gene_dict,read_length,genebeddict)
+	filter_tx(outgtf_ref,genebed, exp_bed,tx_gene_dict,gene_dict,read_length,genebeddict)
+	filter_tx(gtf_notinref,genebed, False,tx_gene_dict,gene_dict,read_length,genebeddict)
+	filter_tx(gtf_inref,genebed, False,tx_gene_dict,gene_dict,read_length,genebeddict)
+	sort_coord(exp_bed,exp_bed_sorted,1,2, debug)
+	#gtf to bed 
+	outbed_noref= make_tempfile(filename, "outbed_noref", tempfolder)
+	gtf_to_bed(outgtf_noref,outbed_noref,debug)
+	outgtf_multiexon = make_tempfile(filename, "outgtf_multiexon", tempfolder)
+	filter_single_exon_genes(exon_noref,outgtf_multiexon)
+
+
+	all_exons = make_tempfile(filename, "all_exons", tempfolder)
+	all_exons_sorted = make_tempfile(filename, "all_exons", tempfolder)
+	all_exons_merged = make_tempfile(filename, "all_exons_merged", tempfolder)
+
+	combine_files(exon_ref,outgtf_multiexon,all_exons,debug)
+	sort_coord(all_exons,all_exons_sorted,1,4, debug)
+
+	splice_start = make_tempfile(filename, "splice_start", tempfolder)
+	splice_stop = make_tempfile(filename, "splice_stop", tempfolder)
+	spliced_TE = make_tempfile(filename, "spliced_TE", tempfolder)
+	spliced_TE_start = make_tempfile(filename, "spliced_TE_start", tempfolder)
+	spliced_TE_stop = make_tempfile(filename, "spliced_TE_stop", tempfolder)
+	splice_start_sorted = make_tempfile(filename, "spliced_start_sorted", tempfolder)
+	splice_stop_sorted = make_tempfile(filename, "spliced_stop_sorted", tempfolder)
+	spliced_TE_sorted = make_tempfile(filename, "spliced_TE_sorted", tempfolder)
+	start_dict=defaultdict(set)
+	stop_dict=defaultdict(set)
+	find_splice_sites(gtf,start_dict,stop_dict)
+	filter_splice(splice_file,splice_start,splice_stop,start_dict,stop_dict) #convert coordinates of introns into bed format
+	sort_coord(splice_start,splice_start_sorted,1,2, debug)     
+	sort_coord(splice_stop,splice_stop_sorted,1,2, debug)      
+	spliced_TE_sorted = outfolder + "/" + filename + "_spliced_TEs.txt"
+
+
+
+	merge(all_exons_sorted,all_exons_merged,0,strandedness,["-c 7,3,5","-o distinct,distinct,sum"])
+	interexon_exp_bed= make_tempfile(filename, "interexon_exp" + "bed", tempfolder)
+	interexon_exp_bed_sorted= make_tempfile(filename, "interexon_exp_sorted" + "bed", tempfolder)
+	if strandedness > 0:
+		strand="+"
+		filtered_bedgraph_plus =make_tempfile(filename, "filtered_bedgraph" + "_" + strand, tempfolder)
+		filtered_bed_plus =make_tempfile(filename, "filtered_bed" + "_" + strand, tempfolder)
+		intron_exp_plus = make_tempfile(filename, "intron_exp" + "_" + strand, tempfolder)
+		interexon_exp_plus= make_tempfile(filename, "interexon_exp" + "_" + strand, tempfolder)
+		intron_exp_spliced_start_plus= make_tempfile(filename, "intron_exp_spliced_start" + "_" + strand, tempfolder)
+		intron_exp_spliced_stop_plus= make_tempfile(filename, "intron_exp_spliced_stop" + "_" + strand, tempfolder)
+		eval_intron(plus_bedgraph,all_exons_merged,strand, filename,tempfolder,splice_start_sorted,splice_stop_sorted, filtered_bedgraph_plus,filtered_bed_plus, intron_exp_plus,interexon_exp_plus, intron_exp_spliced_start_plus, intron_exp_spliced_stop_plus)
+		strand="-"
+		filtered_bedgraph_minus =make_tempfile(filename, "filtered_bedgraph" + "_" + strand, tempfolder)
+		filtered_bed_minus =make_tempfile(filename, "filtered_bed" + "_" + strand, tempfolder)
+		intron_exp_minus = make_tempfile(filename, "intron_exp" + "_" + strand, tempfolder)
+		interexon_exp_minus= make_tempfile(filename, "interexon_exp" + "_" + strand, tempfolder)
+		intron_exp_spliced_start_minus= make_tempfile(filename, "intron_exp_spliced_start" + "_" + strand, tempfolder)
+		intron_exp_spliced_stop_minus= make_tempfile(filename, "intron_exp_spliced_stop" + "_" + strand, tempfolder)
+		eval_intron(minus_bedgraph,all_exons_merged,strand, filename,tempfolder,splice_start_sorted,splice_stop_sorted, filtered_bedgraph_minus,filtered_bed_minus, intron_exp_minus,interexon_exp_minus, intron_exp_spliced_start_minus, intron_exp_spliced_stop_minus)
+		combine_files(filtered_bed_plus,filtered_bed_minus,interexon_exp_bed,debug) 
+		sort_coord(interexon_exp_bed,interexon_exp_bed_sorted,1,2, debug)
+	else:
+		strand="."
+		eval_intron(unstranded_bedgraph,all_exons_merged, strand, filename,tempfolder,splice_start_sorted,splice_stop_sorted)    
+
+
+		##### PREPARE TES #####
+			#filter_TE
+
+	simple_TE = make_tempfile(filename, "simple_TE", tempfolder)
+	simple_TE_sorted = make_tempfile(filename, "simple_TE_sorted", tempfolder)
+	simple_tx = make_tempfile(filename, "simple_tx", tempfolder)
+	simple_tx_sorted = make_tempfile(filename, "simple_tx_sorted", tempfolder)    
+	exp_TE = make_tempfile(filename, "exp_TE", tempfolder)
+	exp_TE_sorted = make_tempfile(filename, "exp_TE_sorted", tempfolder)   
+
+	if verbosity:
+		print("Merging expressed TEs" + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
+
+
+	filter_TE(countfile,simple_TE,simple_tx,strandedness) #simple_TE = annotated coordinates, simple_tx= transcribed coordinates
+	get_exp_TE(simple_tx,exp_TE)
+	sort_coord(exp_TE,exp_TE_sorted,1,2, debug)
+	sort_coord(simple_TE,simple_TE_sorted,1,2, debug)
+	sort_coord(simple_tx,simple_tx_sorted,1,2, debug)
+
+	intersect_wawb(simple_TE_sorted, splice_start_sorted,spliced_TE_start,strandedness) #intersect TEs with intron
+	intersect_wawb(simple_TE_sorted, splice_stop_sorted,spliced_TE_stop,strandedness)   
+	combine_files(spliced_TE_start,spliced_TE_stop,spliced_TE,debug) 
+	sort_coord(spliced_TE,spliced_TE_sorted,1,2, debug)
+	splicedTE_dict=defaultdict(set)
+	splice_site_dict=defaultdict(set)
+	find_spliced_TEs(spliced_TE_sorted,splicedTE_dict,splice_site_dict)
+
+	#merge TE by 1000
+	if verbosity:
+		print("Merging nearby expressed TEs for " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
+
+
+	mergedTE_1kb = make_tempfile( filename, "mergedTE" + "_1kb", tempfolder)
+
+	merge(exp_TE_sorted,mergedTE_1kb,1000,strandedness,["-c 6,4,8","-o distinct,collapse,sum"])
+
+	mergedTE_5kb = make_tempfile( filename, "mergedTE" + "_5kb", tempfolder)
+
+	merge(exp_TE_sorted,mergedTE_5kb,5000,strandedness,["-c 6,4,8","-o distinct,collapse,sum"])    
+
+
+	if verbosity:
+		print("Comparing merged TE locations with expressed transcript exons" + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
+
+
+		#intersect merge with filtered TE
+	TE_and_merged = make_tempfile( filename, "TE_and_merged", tempfolder)
+	merged1andcontig = make_tempfile( filename, "merged1andcontig", tempfolder)
+	merged_and_ref = make_tempfile( filename, "merged_and_ref", tempfolder)
+	merged_and_noref = make_tempfile( filename, "merged_and_noref", tempfolder)    
+	intersect_wawb(interexon_exp_bed_sorted,mergedTE_1kb,merged1andcontig,strandedness)
+	intersect_wawb(simple_tx_sorted,merged1andcontig,TE_and_merged,strandedness)
+	intersect_wawb(interexon_exp_bed_sorted,exon_ref,merged_and_ref,strandedness)
+	intersect_wawb(interexon_exp_bed_sorted,exon_ref,merged_and_noref,strandedness)
+	merged_dict={}
+	get_mergedinfo(TE_and_merged,merged_dict,merged_and_ref,merged_and_noref)
+
+	if verbosity:
+		print("Comparing TE locations with spliced intron locations " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
+
+		#find spliced TEs
+
+
+	####COMBINE INFO ####
+	#get closest sense 
+	#merge single exon unguided transcripts
+	if verbosity:
+		print("Finding closest sense gene " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
+
+
+	sensedis_noref = make_tempfile(filename,"sensedis_noref",tempfolder)
+	antisensedis_noref = make_tempfile(filename,"antisensedis_noref",tempfolder)
+	noref_dis_unlabeled = make_tempfile(filename,"norefdis",tempfolder) 
+	noref_dis = make_tempfile(filename,"norefdis",tempfolder) 
+
+	closest_sense_(simple_tx_sorted,outbed_noref,sensedis_noref,strandedness)
+	closest_antisense(simple_tx_sorted,outbed_noref,antisensedis_noref,strandedness)
+	combine_files(sensedis_noref,antisensedis_noref,noref_dis,debug) 
+	#label_files(noref_dis_unlabeled,noref_dis,"noref",debug) 
+	#get closest antisense     
+	if verbosity:
+		print("Finding closest antisense gene " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)
+
+
+	ref_dis_unlabeled = make_tempfile(filename,"refdis",tempfolder) 
+	sensedis_ref_exp = make_tempfile(filename,"sensedis_ref",tempfolder)
+	antisensedis_ref_exp = make_tempfile(filename,"antisensedis_ref",tempfolder)
+	ref_dis_exp = make_tempfile(filename,"refdis",tempfolder) 
+	sensedis_ref_ = make_tempfile(filename,"sensedis_ref",tempfolder)
+	antisensedis_ref = make_tempfile(filename,"antisensedis_ref",tempfolder)
+	ref_dis_all = make_tempfile(filename,"refdis",tempfolder) 
+
+	closest_sense(simple_tx_sorted,genebed,sensedis_ref,strandedness)
+	closest_antisense(simple_tx_sorted,genebed,antisensedis_ref,strandedness)
+	combine_files(sensedis_ref,antisensedis_ref,ref_dis_all,debug) 
+
+	closest_sense(simple_tx_sorted,exp_bed_sorted,sensedis_ref_exp,strandedness)
+	closest_antisense(simple_tx_sorted,exp_bed_sorted,antisensedis_ref_exp,strandedness)
+	combine_files(sensedis_ref_exp,antisensedis_ref_exp,ref_dis_exp,debug) 
+	combine_files(ref_dis_all,ref_dis_exp,ref_dis,debug)
+	#label_files(ref_dis_unlabeled,ref_dis,"ref",debug) 
+
+	outdis = make_tempfile(filename,"outdis",tempfolder)
+	combine_files(ref_dis,noref_dis,outdis,debug)
+
+	# outdis_sorted = outdis + "_sorted"
+	# sort_coord(outdis,outdis_sorted,1,2)
+	#for each TE_gene intersection:
+	if verbosity:
+		print("Flagging TEs  for " + filename + " " + str(datetime.now()) + "\n",file = sys.stderr)    
+
+
+	tempflag = make_tempfile(filename,"flag",tempfolder)
+
+	tx_loop(outdis,gene_dict,tx_gene_dict,splicedTE_dict,splice_site_dict,merged_dict,filename,strandedness,tempflag)
+	flag_file =  outfolder + "/" + filename + "_flag.txt"
+	sort_coord_header(tempflag, flag_file,1,2,debug)
+
+
+	if not debug:
+		os.unlink(outgtf_ref_temp)
+		os.unlink(outgtf_noref_temp)    
+		os.unlink(abund_ref_temp)
+		os.unlink(abund_noref_temp)
+		os.unlink(exon_ref)
+		os.unlink(exon_noref)
+		os.unlink(exon_notinref)
+		os.unlink(inref)
+		os.unlink(gtf_notinref)
+		os.unlink(gtfvsref)
+		os.unlink(gtf_inref)
+		os.unlink(exp_bed)
+		os.unlink(exp_bed_sorted)
+		os.unlink(outbed_noref)
+		os.unlink(simple_TE)
+		os.unlink(simple_TE_sorted)
+		os.unlink(simple_tx)
+		os.unlink(simple_tx_sorted)
+		os.unlink(exp_TE)
+		os.unlink(exp_TE_sorted)
+		os.unlink(mergedTE_1kb)
+		os.unlink(mergedTE_1kb_bed)
+		os.unlink(TE_and_merged)
+		os.unlink(merged_and_ref)
+		os.unlink(merged_and_noref)
+		os.unlink(splice_bed)    
+		os.unlink(spliced_TE)
+		os.unlink(splice_bed_sorted)
+		os.unlink(sensedis_noref)
+		os.unlink(antisensedis_noref)
+		os.unlink(noref_dis_unlabeled)
+		os.unlink(noref_dis)
+		os.unlink(sensedis_ref)
+		os.unlink(antisense_ref)
+		os.unlink(ref_dis_unlabeled)
+		os.unlink(ref_dis)
+		os.unlink(outdis)    
+		os.unlink(tempflag)
 
 
 	####### STOP TIMING SCRIPT #######################
