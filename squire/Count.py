@@ -1560,21 +1560,6 @@ def main(**kwargs):
 
 	paired_end = is_paired(bamfile,basename,tempfolder,debug)
 
-	if verbosity:
-		print("Quantifying Gene expression "+ str(datetime.now())  + "\n",file = sys.stderr)
-	ingtf = find_file(fetch_folder,".gtf",build,1,True)
-	outgtf_ref =outfolder + "/" + basename + ".gtf"
-	abund_ref =outgtf_ref.replace(".gtf","_abund.txt")
-	outgtf_ref_temp =  make_tempfile(basename, "outgtf_ref", tempfolder)
-	abund_ref_temp = outgtf_ref_temp.replace("outgtf","outabund")
-	Stringtie(bamfile,outfolder,basename,strandedness,pthreads,ingtf, verbosity,outgtf_ref_temp) 
-	sort_coord(outgtf_ref_temp,outgtf_ref,1,4,debug)
-	sort_coord_header(abund_ref_temp,abund_ref,3,5,debug)	       
-	genename_dict={}
-	filter_abund(abund_ref,genename_dict,False)
-	genecounts=outfolder + "/" + basename + "_refGenecounts.txt"
-	filter_tx(outgtf_ref, genename_dict,read_length,genecounts)
-
 
 	#### OPEN OUTPUTS & WRITE HEADER INFORMATION#############
 	if verbosity:
@@ -1975,6 +1960,22 @@ def main(**kwargs):
 		if not debug:
 			os.unlink(unique_bed)
 			os.unlink(multi_bed)
+
+	if verbosity:
+		print("Quantifying Gene expression "+ str(datetime.now())  + "\n",file = sys.stderr)
+		
+	ingtf = find_file(fetch_folder,".gtf",build,1,True)
+	outgtf_ref =outfolder + "/" + basename + ".gtf"
+	abund_ref =outgtf_ref.replace(".gtf","_abund.txt")
+	outgtf_ref_temp =  make_tempfile(basename, "outgtf_ref", tempfolder)
+	abund_ref_temp = outgtf_ref_temp.replace("outgtf","outabund")
+	Stringtie(bamfile,outfolder,basename,strandedness,pthreads,ingtf, verbosity,outgtf_ref_temp) 
+	sort_coord(outgtf_ref_temp,outgtf_ref,1,4,debug)
+	sort_coord_header(abund_ref_temp,abund_ref,3,5,debug)	       
+	genename_dict={}
+	filter_abund(abund_ref,genename_dict,False)
+	genecounts=outfolder + "/" + basename + "_refGenecounts.txt"
+	filter_tx(outgtf_ref, genename_dict,read_length,genecounts)
 
 	####### STOP TIMING SCRIPT #######################
 	if verbosity:
