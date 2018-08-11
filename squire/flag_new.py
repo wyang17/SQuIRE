@@ -1445,7 +1445,7 @@ def main(**kwargs):
 	if not bamfile:
 		raise Exception ("Bamfile with " + filename + " not found in " + map_folder + "\n")
 
-	countfile = find_file(count_folder,"_counts.txt",filename,1)
+	countfile = find_file(count_folder,"_TEcounts.txt",filename,1)
 	if not countfile:
 		raise Exception ("countfile with " + filename + " not found in" + count_folder + "\n") 
 
