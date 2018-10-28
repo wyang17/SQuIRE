@@ -166,7 +166,7 @@ def create_subfamily_dict(infilepath,count_dict):
                 if count=="tot_counts":
                     continue
                 else:
-                    count = str(int(round(float(line[5]))))
+                    count = str(int(round(float(line[6]))))
                 sample = line[0]
                 if taxo not in count_dict:
                     count_dict[taxo] = {sample:count}
