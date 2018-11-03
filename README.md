@@ -12,6 +12,7 @@
 
 [Example Pipeline](#example-pipeline)
 
+Further SQuIRE documentation in preprint article on BioRxiv: https://doi.org/10.1101/313999
 
 ## Installation ##
 
