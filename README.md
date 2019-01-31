@@ -13,7 +13,8 @@
 [Example Pipeline](#example-pipeline)
 
 
-Read about SQuIRE in:
+#### Read about SQuIRE in: ####
+
 Wan R Yang, Daniel Ardeljan, Clarissa N Pacyna, Lindsay M Payer, Kathleen H Burns; SQuIRE reveals locus-specific regulation of interspersed repeat expression, Nucleic Acids Research, , gky1301, https://doi.org/10.1093/nar/gky1301
 
 
