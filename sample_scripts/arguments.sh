@@ -12,7 +12,7 @@ fastq_folder=
 #Location of fastq files
 
 samplenames=
-#Space separated list of sample names found in Fastq files
+#Comma separated list of sample names found in Fastq files
 
 build=
 #UCSC designation for genome build, eg. 'hg38'; if using custom repeatmasker file (see below), enter custom build name
