@@ -19,7 +19,7 @@ argument_file=$1
 . $argument_file
 
 # Loop through read 1 fastq files
-for samplename in $samplelist
+for samplename in $samplenames
 do
   if [[ `stat -c %s $count_folder/${samplename}_counts.txt` < 1000 ]]
   then
