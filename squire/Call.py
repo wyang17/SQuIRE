@@ -319,7 +319,10 @@ def main(**kwargs):
             countline = "\t".join(count_list)
             DEfile.writelines(gene + "\t" + countline + "\n")
         for TE_key,sample_dict in TE_dict.iteritems():
-            TE_out=",".join(TE_key)
+            if subfamily:
+                TE_out = TE_key
+            else:
+                TE_out=",".join(TE_key)
             count_list = []
             for sample in sample_list:
                 if sample in sample_dict:
