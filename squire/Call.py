@@ -55,7 +55,7 @@ def filter_files(file_in,file_out, string, column):
     command = "'$" + str(column) + "==" + '"' + string + '"'+ "'"
     pastecommandlist = ["awk", "-v", "OFS='\\t'",command,file_in, ">", file_out]
     pastecommand = " ".join(pastecommandlist)
-    sp.check_call(["/bin/sh","-c",pastecommand])
+    sp.check_call(["/bin/bash","-c",pastecommand])
 
 def rename_file(oldname,newname):
     shutil.move(oldname, newname)
@@ -195,7 +195,7 @@ def create_rscript(count_table,coldata,outfolder,output_format,projectname,verbo
 
     Rcommandlist = ["Rscript", r_script, count_table,coldata,outfolder,projectname,pthreads,condition1,condition2,str(label_no)]
     Rcommand = " ".join(Rcommandlist)
-    sp.check_call(["/bin/sh","-c",Rcommand])
+    sp.check_call(["/bin/bash","-c",Rcommand])
 
     # if output_format=="html":
     #     render_command="rmarkdown::render('" + r_script + "')"
@@ -203,7 +203,7 @@ def create_rscript(count_table,coldata,outfolder,output_format,projectname,verbo
     #     render_command="rmarkdown::render('" + r_script + "', 'pdf_document')"
     # Rcommandlist = ["R","-e", render_command]
     # Rcommand = " ".join(Rcommandlist)
-    # sp.check_call(["/bin/sh","-c",Rcommand])
+    # sp.check_call(["/bin/bash","-c",Rcommand])
 
     os.unlink(r_script)
 

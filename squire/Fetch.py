@@ -59,22 +59,22 @@ def gtf_to_bed(gtf,bed):
     genepred=gtf.replace(".gtf",".genepred")
     gtftogenepredcommand_list = ["gtfToGenePred",gtf,genepred] 
     gtftogenepredcommand=" ".join(gtftogenepredcommand_list)
-    sp.check_call(["/bin/sh", "-c", gtftogenepredcommand]) 
+    sp.check_call(["/bin/bash", "-c", gtftogenepredcommand]) 
     #convert genepred to bed
     genepredtobedcommand_list = ["genePredToBed ",genepred,bed] 
     genepredtobedcommand=" ".join(genepredtobedcommand_list)
-    sp.check_call(["/bin/sh", "-c", genepredtobedcommand])    
+    sp.check_call(["/bin/bash", "-c", genepredtobedcommand])    
 
 def genepred_to_bed(genepred,bed,outfolder): 
     refGene_temp=make_tempfile("refGenebed",outfolder)   
     #convert genepred to bed
     genepredtobedcommand_list = ["genePredToBed ",genepred,refGene_temp] 
     genepredtobedcommand=" ".join(genepredtobedcommand_list)
-    sp.check_call(["/bin/sh", "-c", genepredtobedcommand])    
+    sp.check_call(["/bin/bash", "-c", genepredtobedcommand])    
 
     sort_commandlist = ["sort","-k1,1", "-k2,2n",genepred,refGene_temp, ">", bed]
     sort_command = " ".join(sort_commandlist)
-    sp.check_call(["/bin/sh", "-c", sort_command])
+    sp.check_call(["/bin/bash", "-c", sort_command])
 
     os.unlink(refGene_temp)
 
@@ -85,15 +85,15 @@ def genepred_to_gtf(genepred,gtf,outfolder):
 
     genePredToGtf_commandlist = ["genePredToGtf","file",genepred,refGene_temp]
     genePredToGtf_command = " ".join(genePredToGtf_commandlist)
-    sp.check_call(["/bin/sh", "-c", genePredToGtf_command])
+    sp.check_call(["/bin/bash", "-c", genePredToGtf_command])
 
     replace_command_list = ["awk","-v", "OFS='\\t'", """'{ gsub("stdin","hg38_refGene",$2); print $0 }'""", refGene_temp, ">", refGene_temp2]
     replace_command = " ".join(replace_command_list)
-    sp.check_call(["/bin/sh","-c",replace_command])
+    sp.check_call(["/bin/bash","-c",replace_command])
 
     sort_commandlist = ["sort","-k1,1", "-k4,4n", refGene_temp2, ">", refGene_temp3]
     sort_command = " ".join(sort_commandlist)
-    sp.check_call(["/bin/sh", "-c", sort_command])
+    sp.check_call(["/bin/bash", "-c", sort_command])
 
     fix_gtf(refGene_temp3, gtf)
 
@@ -136,7 +136,7 @@ def sort_coord(infile, outfile,chrcol,startcol):
     startfieldsort = "-k" + str(startcol) + "," + str(startcol) + "n"
     sort_command_list = ["sort",chrfieldsort,startfieldsort, infile, ">", outfile]
     sort_command = " ".join(sort_command_list)
-    sp.check_call(["/bin/sh", "-c", sort_command])
+    sp.check_call(["/bin/bash", "-c", sort_command])
 
 def get_basename(filepath):
         filename = os.path.basename(filepath)
@@ -412,7 +412,7 @@ def main(**kwargs):
         refGene_genepred=outfolder + "/" + build + "_refGene.genepred"        
         removecolumn_commandlist = ["cut","-f2-",refGene_name,">",refGene_genepred]
         removecolumn_command = " ".join(removecolumn_commandlist)
-        sp.check_call(["/bin/sh", "-c", removecolumn_command])    
+        sp.check_call(["/bin/bash", "-c", removecolumn_command])    
         os.unlink(refGene_name)
 
         if verbosity:
@@ -445,7 +445,7 @@ def main(**kwargs):
         if verbosity:
             print("Building STAR index" + "\n", file = sys.stderr)
             print(STAR_build_command,file=sys.stderr)
-        sp.check_call(["/bin/sh", "-c", STAR_build_command])
+        sp.check_call(["/bin/bash", "-c", STAR_build_command])
     ####### STOP TIMING SCRIPT #######################
     if verbosity:
         endTime = datetime.now()

@@ -98,7 +98,7 @@ def getlibsize(logfile, infile,multi_bed,uniq_bed,paired_end,debug):
 		count_temp = infile + "libsize"
 		linecountcommandlist = ["samtools", "view", infile, "|", "cut", "-f1", "|", "sort", "-k1,1", "|" , "uniq","|", "wc -l", ">", count_temp]
 		linecountcommand = " ".join(linecountcommandlist)
-		sp.check_call(["/bin/sh","-c",linecountcommand])
+		sp.check_call(["/bin/bash","-c",linecountcommand])
 		with open(count_temp, 'r') as count_file:
 			first_line = count_file.readline()
 			first_line_split = first_line.split()
@@ -114,7 +114,7 @@ def getlinecount(first_file,name):
 	count_temp = first_file +"_" + name +  ".libsize"
 	linecountcommandlist = ["wc","-l",first_file,">", count_temp]
 	linecountcommand = " ".join(linecountcommandlist)
-	sp.check_call(["/bin/sh","-c",linecountcommand])
+	sp.check_call(["/bin/bash","-c",linecountcommand])
 
 	with open(count_temp, 'r') as count_file:
 		first_line = count_file.readline()
@@ -166,7 +166,7 @@ def Stringtie(bamfile,outfolder,basename,strandedness,pthreads,gtf, verbosity,ou
         outputs= outputs + ["-A", out_abund]
     StringTiecommand_list = ["stringtie"] + runoptions + TEoptions + outputs + inputs
     StringTiecommand=" ".join(StringTiecommand_list)
-    sp.check_call(["/bin/sh", "-c", StringTiecommand])
+    sp.check_call(["/bin/bash", "-c", StringTiecommand])
 
 			
 class gtfline(object):
@@ -270,26 +270,26 @@ def intersect(bamfile,bedfile,out_bed):
 	######## INTERSECT WITH BED FILE #########################
 	intersect_list = ["bedtools", "intersect", "-a",bamfile,"-b",bedfile,"-wo", "-bed",">",out_bed]
 	intersect_command = " ".join(intersect_list)
-	sp.check_call(["/bin/sh", "-c", intersect_command])
+	sp.check_call(["/bin/bash", "-c", intersect_command])
 
 def intersect_flank(bamfile,bedfile,out_bed,debug):
 	######## INTERSECT WITH BED FILE #########################
 	#keep read if 50% of read overlaps with TE range
 	intersect_list = ["bedtools", "intersect", "-a",bamfile,"-b",bedfile,"-wo", "-bed","-f", ".5",">",out_bed]
 	intersect_command = " ".join(intersect_list)
-	sp.check_call(["/bin/sh", "-c", intersect_command])
+	sp.check_call(["/bin/bash", "-c", intersect_command])
 
 def label_files(file_in,file_out, string,debug):
 	command = "'{print $0," + '"' + string + '"' + "}'"
 	pastecommandlist = ["awk", "-v", "OFS='\\t'",command,file_in, ">", file_out]
 	pastecommand = " ".join(pastecommandlist)
-	sp.check_call(["/bin/sh","-c",pastecommand])
+	sp.check_call(["/bin/bash","-c",pastecommand])
 	if not debug:
 		os.unlink(file_in)
 def combine_files(file1,file2,outfile,debug):
 	catcommand_list = ["cat", file1, file2, ">", outfile] #combines multi_aligned reads
 	catcommand = " ".join(catcommand_list)
-	sp.check_call(["/bin/sh","-c",catcommand])
+	sp.check_call(["/bin/bash","-c",catcommand])
 
 	if not debug:
 		os.unlink(file1)
@@ -299,14 +299,14 @@ def sort_temp(tempfile, field,sorted_tempfile,debug):
 	field_command = str(field) + "," + str(field)
 	sort_command_list = ["sort","-k",field_command, tempfile, ">", sorted_tempfile]
 	sort_command = " ".join(sort_command_list)
-	sp.check_call(["/bin/sh", "-c", sort_command])
+	sp.check_call(["/bin/bash", "-c", sort_command])
 	if not debug:
 		os.unlink(tempfile)
 
 def get_header(bamfile,headerfile):
 	samtoolscommand_list = ["samtools","view","-H", bamfile, ">",headerfile]
 	samtoolscommand = " ".join(samtoolscommand_list)
-	sp.check_call(["/bin/sh", "-c", samtoolscommand])
+	sp.check_call(["/bin/bash", "-c", samtoolscommand])
 
 def is_paired(bamfile,basename,tempfolder,debug):
 	bam_temp = make_tempfile(basename,"bam_header",tempfolder)
@@ -335,19 +335,19 @@ def find_properpair(paired_bam, proper,nonproper):
 	#-F2 = discard proper pair
 	samtoolscommand_list = ["samtools","view","-bf2", "-o", proper, paired_bam]
 	samtoolscommand = " ".join(samtoolscommand_list)
-	sp.check_call(["/bin/sh", "-c", samtoolscommand])
+	sp.check_call(["/bin/bash", "-c", samtoolscommand])
 	samtoolscommand_list = ["samtools","view","-bF2", "-o", nonproper, paired_bam]
 	samtoolscommand = " ".join(samtoolscommand_list)
-	sp.check_call(["/bin/sh", "-c", samtoolscommand])
+	sp.check_call(["/bin/bash", "-c", samtoolscommand])
 
 def split_paired(paired_bed, paired_bed1, paired_bed2,debug):
 	#separate read 1 and read2 into separate files
 	awkcommand_list = ["awk","'$4 ~ v'","v='/1'", paired_bed,">", paired_bed1]
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh", "-c", awkcommand])
+	sp.check_call(["/bin/bash", "-c", awkcommand])
 	awkcommand_list = ["awk","'$4 ~ v'","v='/2'", paired_bed,">", paired_bed2]
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh", "-c", awkcommand])
+	sp.check_call(["/bin/bash", "-c", awkcommand])
 	if not debug:
 		os.unlink(paired_bed)
 
@@ -391,10 +391,10 @@ def get_coords(file_in,read_end,strandedness, file_out,debug):
 	temp_file_new = file_in + "_temp_new"
 	coords_commandlist = ["awk", "-v", "OFS='\\t'","""'{print $1 OFS $19-$14+$2 OFS $19-$14+$3 OFS $4 OFS $5 OFS "orig_"$6 OFS $16 OFS $23}'""",file_in, ">", temp_file_coords]
 	coords_command = " ".join(coords_commandlist)
-	sp.check_call(["/bin/sh","-c",coords_command])
+	sp.check_call(["/bin/bash","-c",coords_command])
 	remove_underscore_command_list = ["awk","-v", "OFS='\\t'", """'{ gsub(/_polymorphism/,"",$1); gsub(/_novel/,"",$1);print $0 }'""", temp_file_coords, ">", temp_file_chr]
 	remove_underscore_command = " ".join(remove_underscore_command_list)
-	sp.check_call(["/bin/sh","-c",remove_underscore_command])
+	sp.check_call(["/bin/bash","-c",remove_underscore_command])
 	if not debug:
 		os.unlink(temp_file_coords)
 		os.unlink(file_in)
@@ -403,13 +403,13 @@ def get_coords(file_in,read_end,strandedness, file_out,debug):
 	if strandedness == read_end: #switch strand
 		plus_command_list = ["awk","-v", "OFS='\\t'", """'{ gsub(/orig_\+/,"new_-",$6); print $0 }'""", temp_file_chr, ">", temp_file_plus]
 		plus_command = " ".join(plus_command_list)
-		sp.check_call(["/bin/sh","-c",plus_command])
+		sp.check_call(["/bin/bash","-c",plus_command])
 		minus_command_list = ["awk", "-v", "OFS='\\t'","""'{ gsub(/orig_\-/,"new_+",$6); print $0 }'""", temp_file_plus, ">", temp_file_minus]
 		minus_command = " ".join(minus_command_list)
-		sp.check_call(["/bin/sh","-c",minus_command])
+		sp.check_call(["/bin/bash","-c",minus_command])
 		new_command_list = ["awk", "-v", "OFS='\\t'","""'{ gsub("new_","",$6); print $0 }'""", temp_file_minus, ">", file_out]
 		new_command = " ".join(new_command_list)
-		sp.check_call(["/bin/sh","-c",new_command])
+		sp.check_call(["/bin/bash","-c",new_command])
 		if not debug:
 			os.unlink(temp_file_chr)
 			os.unlink(temp_file_plus)
@@ -417,17 +417,17 @@ def get_coords(file_in,read_end,strandedness, file_out,debug):
 	else: #keep strand
 		new_command_list = ["awk","-v", "OFS='\\t'", """'{ gsub("orig_","",$6); print $0 }'""", temp_file_chr, ">", file_out]
 		new_command = " ".join(new_command_list)
-		sp.check_call(["/bin/sh","-c",new_command])
+		sp.check_call(["/bin/bash","-c",new_command])
 		if not debug:
 			os.unlink(temp_file_chr)
 
 def fix_paired(file1,file2,fixed_file1,fixed_file2, debug): #remove "/1" or "/2"
 	remove1_command_list = ["sed", """'s@/1@@g'""", file1, ">", fixed_file1]
 	remove1_command = " ".join(remove1_command_list)
-	sp.check_call(["/bin/sh","-c",remove1_command])
+	sp.check_call(["/bin/bash","-c",remove1_command])
 	remove2_command_list = ["sed", """'s@/2@@g'""", file2, ">", fixed_file2]
 	remove2_command = " ".join(remove2_command_list)
-	sp.check_call(["/bin/sh","-c",remove2_command])
+	sp.check_call(["/bin/bash","-c",remove2_command])
 	if not debug:
 		os.unlink(file1)
 		os.unlink(file2)
@@ -438,20 +438,20 @@ def find_uniq(combined_tempfile, first_tempfile,unique_tempfile, multi_tempfile,
 	dupe_tempfile1 = combined_tempfile + "_dupe1"
 	dupe_command_list = ["awk","'!a[$4]++'", combined_tempfile, ">", first_tempfile] #skips lines if the read has already appeared in the file
 	dupe_command = " ".join(dupe_command_list)
-	sp.check_call(["/bin/sh", "-c", dupe_command])
+	sp.check_call(["/bin/bash", "-c", dupe_command])
 	awkcommand_list = ["awk", """'FNR==NR{a[$0]++;next}!a[$0]'""", first_tempfile, combined_tempfile,  ">", dupe_tempfile] #writes lines in combined_tempfile that are not in unique_tempfile2 -> duplicates
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	awkcommand_list = ["awk", """'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""", dupe_tempfile, first_tempfile,  ">", unique_tempfile] #writes lines where read is in unique2 but not multi file -> truly unique
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	awkcommand_list = ["awk", """'FNR==NR{a[$4]++;next}a[$4]{print $0}'""", dupe_tempfile, first_tempfile,  ">", dupe_tempfile1] #writes lines in read is in unique2 and multi file -> gets first appearance of multi-aligned reads
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	#delete unneeded tempfiles
 	catcommand_list = ["cat", dupe_tempfile, dupe_tempfile1, ">", multi_tempfile ] #combines multi_aligned reads
 	catcommand = " ".join(catcommand_list)
-	sp.check_call(["/bin/sh","-c",catcommand])
+	sp.check_call(["/bin/bash","-c",catcommand])
 	if not debug:
 		os.unlink(dupe_tempfile)
 		os.unlink(dupe_tempfile1)
@@ -477,21 +477,21 @@ def match_reads(R1, R2, strandedness, matched_file,unmatched_file1,unmatched_fil
 	unmatched_file2_v1 = unmatched_file2 + "_v1"
 	roundcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $2/10000}'""", """OFMT='%.f'""", R1, ">", rounded_1_v1]
 	roundcommand=" ".join(roundcommand_list)
-	sp.check_call(["/bin/sh","-c",roundcommand])
+	sp.check_call(["/bin/bash","-c",roundcommand])
 	roundcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $2/10000}'""", """OFMT='%.f'""", R2, ">", rounded_2_v1]
 	roundcommand=" ".join(roundcommand_list)
-	sp.check_call(["/bin/sh","-c",roundcommand])
+	sp.check_call(["/bin/bash","-c",roundcommand])
 	#create new read to join on that is read/chro
 	newreadcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $4 "/" $1 "/" $11 "/" $6}'""", rounded_1_v1,"|", "sort -k12", ">", newread_1_v1]
 	newreadcommand=" ".join(newreadcommand_list)
-	sp.check_call(["/bin/sh","-c",newreadcommand])
+	sp.check_call(["/bin/bash","-c",newreadcommand])
 	newreadcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $4 "/" $1 "/" $11 "/" $6}'""",  rounded_2_v1,"|", "sort -k12", ">", newread_2_v1]
 	newreadcommand=" ".join(newreadcommand_list)
-	sp.check_call(["/bin/sh","-c",newreadcommand])
+	sp.check_call(["/bin/bash","-c",newreadcommand])
 	#use join not awk because awk only takes 1st hit with shared value to find match
 	joincommand_list = ["join", "-j", "12", "-t", "$'\\t'", "-o", "1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,2.10", newread_1_v1, newread_2_v1, ">" , matched_file_10k_v1]
 	joincommand=" ".join(joincommand_list)
-	sp.check_call(["/bin/sh","-c",joincommand])
+	sp.check_call(["/bin/bash","-c",joincommand])
 	pos_strand_2 =  """($3 -$12 <= 500 && $3 -$12 >= 0 && $2 >= $12 && $6=="+" && $5!=1000 && $15!=1000)""" #insert size < 500 & end of read1 will be after beginning of read 2 & start of read1 will be after beginning of read2
 	minus_strand_2 = """($13 -  $2 <= 500 && $13 -  $2 >= 0 && $12 >= $2 && $6=="-" && $5!=1000 && $15!=1000)""" #insert size < 500 & end of read2 will be after beginning of read 1 & start of read2 will be after beginning of read1
 	poly_pos_2 = """($3 -$12 <= 500 && $3 -$12 >= 0 && $2 >= $12 && $6=="+" && $5==1000 && $15 !=1000) || ($13 -  $2 <= 500 && $13-  $2 >= 0 && $12 >= $2 && $6=="+" && $5!=1000 && $15==1000)||($3 -$12 <= 500 && $3 -$12 >= 0 && $2 >= $12 && $6=="+" && $5==1000 && $15==1000)"""
@@ -505,56 +505,56 @@ def match_reads(R1, R2, strandedness, matched_file,unmatched_file1,unmatched_fil
 	if strandedness==1: #first strand RNA synthesis (Illumina, dUTP, NSR, NNSR)
 		awkcommand_list2 = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'","""'(""",pos_strand_2,"""||""",minus_strand_2,"||",poly_pos_2,"||",poly_minus_2,"){print $0}'"""]  #find pairs that match TE_ID and strand
 		awkcommand2 = " ".join(awkcommand_list2 + awk_inout_v1)
-		sp.check_call(["/bin/sh","-c",awkcommand2])
+		sp.check_call(["/bin/bash","-c",awkcommand2])
 	if strandedness==2: #second strand (Ligation, standard Solid)
 		awkcommand_list1 = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'","""'(""",pos_strand_1,"""||""", minus_strand_1 ,"||",poly_pos_1,"||",poly_minus_1,""") {print $0}'"""] #find pairs that match TE_ID and strand
 		awkcommand1 = " ".join(awkcommand_list1 + awk_inout_v1)
-		sp.check_call(["/bin/sh","-c",awkcommand1])
+		sp.check_call(["/bin/bash","-c",awkcommand1])
 	if strandedness==0:
 		awkcommand_list0 = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'","""'(""", unstranded,""") {print $0}'"""] #find pairs that match TE_ID and strand
 		awkcommand0 = " ".join(awkcommand_list0 + awk_inout_v1)
-		sp.check_call(["/bin/sh","-c",awkcommand0])
+		sp.check_call(["/bin/bash","-c",awkcommand0])
 	awkcommand_list = ["awk","-v", "OFS='\\t'","-v", "FS='\\t'", """'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""", matched_file_v1,R1,   ">", unmatched_file1_v1] #writes lines in read1 that is not in matched file -> unmatched
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	awkcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'","""'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""", matched_file_v1, R2,  ">", unmatched_file2_v1] #writes lines in read2 that is not in matched file -> unmatched
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	roundcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $2/100000}'""", """OFMT='%.f'""", unmatched_file1_v1, ">", rounded_1_v2]
 	roundcommand=" ".join(roundcommand_list)
-	sp.check_call(["/bin/sh","-c",roundcommand])
+	sp.check_call(["/bin/bash","-c",roundcommand])
 	roundcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $2/100000}'""", """OFMT='%.f'""", unmatched_file2_v1, ">", rounded_2_v2]
 	roundcommand=" ".join(roundcommand_list)
-	sp.check_call(["/bin/sh","-c",roundcommand])
+	sp.check_call(["/bin/bash","-c",roundcommand])
 	newreadcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $4 "/" $1 "/" $11 "/" $6}'""", rounded_1_v2,"|", "sort -k12", ">", newread_1_v2]
 	newreadcommand=" ".join(newreadcommand_list)
-	sp.check_call(["/bin/sh","-c",newreadcommand])
+	sp.check_call(["/bin/bash","-c",newreadcommand])
 	newreadcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'", """'{print $0, $4 "/" $1 "/" $11 "/" $6}'""",  rounded_2_v2,"|", "sort -k12", ">", newread_2_v2]
 	newreadcommand=" ".join(newreadcommand_list)
-	sp.check_call(["/bin/sh","-c",newreadcommand])
+	sp.check_call(["/bin/bash","-c",newreadcommand])
 	#use join not awk because awk only takes 1st hit with shared value to find match
 	joincommand_list = ["join", "-j", "12", "-t", "$'\\t'", "-o", "1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,2.10", newread_1_v2, newread_2_v2, ">" , matched_file_10k_v2]
 	joincommand=" ".join(joincommand_list)
-	sp.check_call(["/bin/sh","-c",joincommand])
+	sp.check_call(["/bin/bash","-c",joincommand])
 	awk_inout_v2 = [matched_file_10k_v2,  ">",  matched_file_v2]
 	if strandedness==1:
 		awkcommand2 = " ".join(awkcommand_list2+ awk_inout_v2)
-		sp.check_call(["/bin/sh","-c",awkcommand2])
+		sp.check_call(["/bin/bash","-c",awkcommand2])
 	if strandedness==2:
 		awkcommand1 = " ".join(awkcommand_list1+ awk_inout_v2)
-		sp.check_call(["/bin/sh","-c",awkcommand1])
+		sp.check_call(["/bin/bash","-c",awkcommand1])
 	if strandedness==0:
 		awkcommand0 = " ".join(awkcommand_list0+ awk_inout_v2)
-		sp.check_call(["/bin/sh","-c",awkcommand0])
+		sp.check_call(["/bin/bash","-c",awkcommand0])
 	catcommand_list = ["cat", matched_file_v1, matched_file_v2, ">", matched_file ] #combines multi_aligned reads
 	catcommand = " ".join(catcommand_list)
-	sp.check_call(["/bin/sh","-c",catcommand])
+	sp.check_call(["/bin/bash","-c",catcommand])
 	awkcommand_list = ["awk","-v", "OFS='\\t'","-v", "FS='\\t'", """'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""", matched_file,R1,   ">", unmatched_file1] #writes lines in read1 that is not in matched file -> unmatched
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	awkcommand_list = ["awk", "-v", "OFS='\\t'","-v", "FS='\\t'","""'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""", matched_file, R2,  ">", unmatched_file2] #writes lines in read2 that is not in matched file -> unmatched
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	if not debug:
 		os.unlink(rounded_1_v1)
 		os.unlink(rounded_2_v1)
@@ -620,17 +620,17 @@ def find_proper(single_bed,nonproper_bed, proper_bed,debug):
 	#separate read 1 and read2 into separate files
 	awkcommand_list = ["awk","'$8 ~ v'","v='nonproper'", single_bed,">", nonproper_bed]
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh", "-c", awkcommand])
+	sp.check_call(["/bin/bash", "-c", awkcommand])
 	awkcommand_list = ["awk", """'FNR==NR{a[$0]++;next}!a[$0]{print $0}'""", nonproper_bed, single_bed, ">", proper_bed] #writes lines that are in single_bed and not in nonproper bed (all proper alignments)
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	if not debug:
 		os.unlink(single_bed)
 
 def remove_repeat_reads(paired_bed,unpaired_bed,new_unpaired_bed, debug): #removes reads from unpaired files that are already present in paired files
 	removecommandlist = ["awk", "-v", "OFS='\\t'","'FNR==NR{a[$4]++;next}!a[$4]{print $0}'",paired_bed, unpaired_bed, ">", new_unpaired_bed]
 	removecommand = " ".join(removecommandlist)
-	sp.check_call(["/bin/sh","-c",removecommand])
+	sp.check_call(["/bin/bash","-c",removecommand])
 	if not debug:
 		os.unlink(unpaired_bed)
 
@@ -640,16 +640,16 @@ def find_paired_uniq(multi_tempfile,paired_uniq_tempfile,new_multi_tempfile, new
 	new_multi_tempfile_1 = new_multi_tempfile + "_0"
 	awkcommand_list = ["awk", """'$9=="paired" && $10 ~/uniq/'""", multi_tempfile,  ">", paired_uniq_tempfile_1] #writes lines labeled with "paired" and uniq
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	awkcommand_list = ["awk", """'FNR==NR{a[$0]++;next}!a[$0]{print $0}'""", paired_uniq_tempfile_1, multi_tempfile, ">", new_multi_tempfile_1] #writes lines that are not paired and uniq
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	awkcommand_list = ["awk", """'FNR==NR{a[$4]++;next}!a[$4]{print $0}'""",  new_multi_tempfile_1, paired_uniq_tempfile_1,  ">", paired_uniq_tempfile] #writes lines in read is in unique2 and multi file -> gets first appearance of multi-aligned reads
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	awkcommand_list = ["awk", """'FNR==NR{a[$0]++;next}!a[$0]{print $0}'""", paired_uniq_tempfile, multi_tempfile, ">", new_multi_tempfile] #writes lines that are not paired and uniq
 	awkcommand = " ".join(awkcommand_list)
-	sp.check_call(["/bin/sh","-c",awkcommand])
+	sp.check_call(["/bin/bash","-c",awkcommand])
 	new_multi_bed = open(new_multi_tempfile, 'a')
 	new_uniq_bed = open(new_uniq_tempfile, 'a')
 
@@ -1418,7 +1418,7 @@ def sort_coord(infile, outfile,chrcol,startcol,debug):
 	startfieldsort = "-k" + str(startcol) + "," + str(startcol) + "n"
 	sort_command_list = ["sort",chrfieldsort,startfieldsort, infile, ">", outfile]
 	sort_command = " ".join(sort_command_list)
-	sp.check_call(["/bin/sh", "-c", sort_command])
+	sp.check_call(["/bin/bash", "-c", sort_command])
 	if not debug:
 		os.unlink(infile)
 
@@ -1427,7 +1427,7 @@ def sort_coord_header(infile, outfile,chrcol,startcol,debug):
 	startfieldsort = "-k" + str(startcol) + "," + str(startcol) + "n"
 	sort_command_list = ["(head -n 2", infile,"&& tail -n +3", infile, "|", "sort",chrfieldsort,startfieldsort, ")", ">", outfile]
 	sort_command = " ".join(sort_command_list)
-	sp.check_call(["/bin/sh", "-c", sort_command])
+	sp.check_call(["/bin/bash", "-c", sort_command])
 	if not debug:
 		os.unlink(infile)
 
@@ -1436,10 +1436,10 @@ def sort_counts(tempfile,headerfile,countsfile, field,debug):
 	field_command = str(field) + "," + str(field) + "rn"
 	sort_command_list = ["sort","-k",field_command, tempfile, ">", sorted_countsfile]
 	sort_command = " ".join(sort_command_list)
-	sp.check_call(["/bin/sh", "-c", sort_command])
+	sp.check_call(["/bin/bash", "-c", sort_command])
 	catcommand_list = ["cat", headerfile, sorted_countsfile, ">",countsfile ] #combines multi_aligned reads
 	catcommand = " ".join(catcommand_list)
-	sp.check_call(["/bin/sh","-c",catcommand])
+	sp.check_call(["/bin/bash","-c",catcommand])
 	if not debug:
 		os.unlink(sorted_countsfile)
 		os.unlink(tempfile)
@@ -1467,7 +1467,7 @@ def bedgraph(infile,strandedness,outfolder,basename):
 	normalization=["""--outWigNorm""", "None"]
 	STARcommand_list = ["STAR","""--runMode""","inputAlignmentsFromBAM"] + inputs + outputs + normalization
 	STARcommand=" ".join(STARcommand_list)
-	sp.check_call(["/bin/sh", "-c", STARcommand])
+	sp.check_call(["/bin/bash", "-c", STARcommand])
 	if strandedness !=0:
 		rename_file(plus_bedgraph_unique,outfolder + "/" + basename + "_plus_unique.bedgraph")
 		rename_file(minus_bedgraph_unique,outfolder + "/" + basename + "_minus_unique.bedgraph")

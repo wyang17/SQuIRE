@@ -68,7 +68,7 @@ def rename_file(oldname,newname):
 def combine_files(file1,file2,outfile,debug):
     catcommand_list = ["cat", file1, file2, ">", outfile] #combines multi_aligned reads
     catcommand = " ".join(catcommand_list)
-    sp.check_call(["/bin/sh","-c",catcommand])
+    sp.check_call(["/bin/bash","-c",catcommand])
 
     if not debug:
         os.unlink(file1)
@@ -129,17 +129,17 @@ def align_paired(fastq1,fastq2,pthreads,trim3,index,outfile,gtf,gzip,prefix,read
 
         STARcommand_list = ["STAR","""--runThreadN""",str(pthreads)] + trim + multi_align + single_reads + discordant + inputs + outputs + add_options
         STARcommand=" ".join(STARcommand_list)
-        sp.check_call(["/bin/sh", "-c", STARcommand])
+        sp.check_call(["/bin/bash", "-c", STARcommand])
 
         STAR_output = prefix + "Aligned.out.bam"
 
         sortcommand_list = ["samtools", "sort", "-@",str(pthreads), STAR_output, prefix]
         sortcommand = " ".join(sortcommand_list)
-        sp.check_call(["/bin/sh", "-c", sortcommand])
+        sp.check_call(["/bin/bash", "-c", sortcommand])
 
         indexcommand_list = ["samtools", "index", outfile]
         indexcommand = " ".join(indexcommand_list)
-        sp.check_call(["/bin/sh", "-c", indexcommand])   
+        sp.check_call(["/bin/bash", "-c", indexcommand])   
 
         os.unlink(STAR_output)
         os.unlink(prefix + "Log.out")
@@ -172,17 +172,17 @@ def align_unpaired(fastq,pthreads,trim3,index,outfile,gtf,gzip,prefix,read_lengt
 
         STARcommand_list = ["STAR","""--runThreadN""",str(pthreads)] + trim + multi_align + inputs + outputs + add_options
         STARcommand=" ".join(STARcommand_list)
-        sp.check_call(["/bin/sh", "-c", STARcommand])
+        sp.check_call(["/bin/bash", "-c", STARcommand])
         STAR_output = prefix + "Aligned.out.bam"
 
         sortcommand_list = ["samtools", "sort", "-@",str(pthreads), STAR_output, prefix]
         sortcommand = " ".join(sortcommand_list)
-        sp.check_call(["/bin/sh", "-c", sortcommand])
+        sp.check_call(["/bin/bash", "-c", sortcommand])
 
 
         indexcommand_list = ["samtools", "index", outfile]
         indexcommand = " ".join(indexcommand_list)
-        sp.check_call(["/bin/sh", "-c", indexcommand])        
+        sp.check_call(["/bin/bash", "-c", indexcommand])        
 
         os.unlink(STAR_output)
         # os.unlink(prefix + "Log.out")
@@ -192,7 +192,7 @@ def align_unpaired(fastq,pthreads,trim3,index,outfile,gtf,gzip,prefix,read_lengt
 def get_header(bamfile,headerfile):
     samtoolscommand_list = ["samtools","view","-H", bamfile, ">",headerfile]
     samtoolscommand = " ".join(samtoolscommand_list)
-    sp.check_call(["/bin/sh", "-c", samtoolscommand])
+    sp.check_call(["/bin/bash", "-c", samtoolscommand])
 
 def mask_reads(infile,extra,chrom_list,basename,outfolder,pthreads,debug):
     read_dict={}
@@ -221,20 +221,20 @@ def mask_reads(infile,extra,chrom_list,basename,outfolder,pthreads,debug):
         search="""'"""+ '$3 ~ /' + chrom + '/' + """'"""
         dupe_command_list = ["samtools","view",infile,chrom, ">", ectopic_alignments] #skips lines if the read has already appeared in the file
         dupe_command = " ".join(dupe_command_list)
-        sp.check_call(["/bin/sh", "-c", dupe_command])
+        sp.check_call(["/bin/bash", "-c", dupe_command])
 
         awkcommand_list = ["samtools","view",  infile,  ">",sam_temp] #writes lines in combined_tempfile that are not in unique_tempfile2 -> duplicates
         awkcommand = " ".join(awkcommand_list)
-        sp.check_call(["/bin/sh","-c",awkcommand])
+        sp.check_call(["/bin/bash","-c",awkcommand])
 
 
         awkcommand_list = ["awk", """'FNR==NR{a[$1]++;next}a[$1]'""", ectopic_alignments, sam_temp,  ">>", ectopic_reads] #writes lines in combined_tempfile that are not in unique_tempfile2 -> duplicates
         awkcommand = " ".join(awkcommand_list)
-        sp.check_call(["/bin/sh","-c",awkcommand])
+        sp.check_call(["/bin/bash","-c",awkcommand])
 
         awkcommand_list = ["awk", """'FNR==NR{a[$1]++;next}!a[$1]'""",  ectopic_alignments, sam_temp,  ">", nonectopic_reads] #writes lines in combined_tempfile that are not in unique_tempfile2 -> duplicates
         awkcommand = " ".join(awkcommand_list)
-        sp.check_call(["/bin/sh","-c",awkcommand])
+        sp.check_call(["/bin/bash","-c",awkcommand])
         if not debug:
             os.unlink(ectopic_alignments)
 

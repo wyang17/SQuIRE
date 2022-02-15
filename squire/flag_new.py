@@ -62,7 +62,7 @@ def filter_files(file_in,file_out, string, column):
 	command = "'$" + str(column) + "==" + '"' + string + '"'+ "'"
 	pastecommandlist = ["awk", "-v", "OFS='\\t'",command,file_in, ">", file_out]
 	pastecommand = " ".join(pastecommandlist)
-	sp.check_call(["/bin/sh","-c",pastecommand])
+	sp.check_call(["/bin/bash","-c",pastecommand])
 
 
 def rename_file(oldname,newname):
@@ -127,7 +127,7 @@ def filter_files(file_in,file_out, string, column):
 	command = "'$" + str(column) + "==" + '"' + string + '"'+ "'"
 	pastecommandlist = ["awk", "-v", "OFS='\\t'",command,file_in, ">", file_out]
 	pastecommand = " ".join(pastecommandlist)
-	sp.check_call(["/bin/sh","-c",pastecommand])
+	sp.check_call(["/bin/bash","-c",pastecommand])
 
 
 def rename_file(oldname,newname):
@@ -192,7 +192,7 @@ def Stringtie(bamfile,outfolder,basename,strandedness,read_length,pthreads,gtf, 
 		outputs= outputs + ["-A", out_abund]
 	StringTiecommand_list = ["stringtie"] + runoptions + TEoptions + outputs + inputs
 	StringTiecommand=" ".join(StringTiecommand_list)
-	sp.check_call(["/bin/sh", "-c", StringTiecommand])
+	sp.check_call(["/bin/bash", "-c", StringTiecommand])
 
 
 def sort_coord(infile, outfile,chrcol,startcol):
@@ -200,18 +200,18 @@ def sort_coord(infile, outfile,chrcol,startcol):
 	startfieldsort = "-k" + str(startcol) + "," + str(startcol) + "n"
 	sort_command_list = ["sort",chrfieldsort,startfieldsort, infile, ">", outfile]
 	sort_command = " ".join(sort_command_list)
-	sp.check_call(["/bin/sh", "-c", sort_command])
+	sp.check_call(["/bin/bash", "-c", sort_command])
 
 def sort_counts(tempfile,headerfile,countsfile, field,debug):
 	sorted_countsfile = tempfile + ".sorted"
 	field_command = str(field) + "," + str(field) + "rn"
 	sort_command_list = ["sort","-k",field_command, tempfile, ">", sorted_countsfile]
 	sort_command = " ".join(sort_command_list)
-	sp.check_call(["/bin/sh", "-c", sort_command])
+	sp.check_call(["/bin/bash", "-c", sort_command])
 	#add header to countsfile
 	catcommand_list = ["cat", headerfile, sorted_countsfile, ">",countsfile ] #combines multi_aligned reads
 	catcommand = " ".join(catcommand_list)
-	sp.check_call(["/bin/sh","-c",catcommand])
+	sp.check_call(["/bin/bash","-c",catcommand])
 	if not debug:
 		os.unlink(sorted_countsfile)
 		os.unlink(tempfile)
@@ -221,7 +221,7 @@ def sort_counts(tempfile,headerfile,countsfile, field,debug):
 def combine_files(file1,file2,outfile,debug):
 	catcommand_list = ["cat", file1, file2, ">", outfile] #combines multi_aligned reads
 	catcommand = " ".join(catcommand_list)
-	sp.check_call(["/bin/sh","-c",catcommand])
+	sp.check_call(["/bin/bash","-c",catcommand])
 	if not debug:
 		os.unlink(file1)
 		os.unlink(file2)
@@ -393,11 +393,11 @@ def gtf_to_bed(gtf,bed,debug):
 	genepred=gtf.replace("gtf","genepred")
 	gtftogenepredcommand_list = ["gtfToGenePred",gtf,genepred] 
 	gtftogenepredcommand=" ".join(gtftogenepredcommand_list)
-	sp.check_call(["/bin/sh", "-c", gtftogenepredcommand]) 
+	sp.check_call(["/bin/bash", "-c", gtftogenepredcommand]) 
 	#convert genepred to bed
 	genepredtobedcommand_list = ["genePredToBed ",genepred,bed] 
 	genepredtobedcommand=" ".join(genepredtobedcommand_list)
-	sp.check_call(["/bin/sh", "-c", genepredtobedcommand])     
+	sp.check_call(["/bin/bash", "-c", genepredtobedcommand])     
 	if not debug:
 		os.unlink(genepred)  
 
@@ -408,11 +408,11 @@ def closest_sense(TEfile,genefile,outfile,strandedness):
 	if strandedness == 0:
 		closest_list = ["bedtools", "closest", "-a",TEfile,"-b",genefile,"-D","b","-t","all","-s",">",outfile]
 		closest_command = " ".join(closest_list)
-		sp.check_call(["/bin/sh", "-c", closest_command])
+		sp.check_call(["/bin/bash", "-c", closest_command])
 	else:
 		closest_list = ["bedtools", "closest", "-a",TEfile,"-b",genefile,"-D","b","-t","all","-s",">",outfile]
 		closest_command = " ".join(closest_list)
-		sp.check_call(["/bin/sh", "-c", closest_command])
+		sp.check_call(["/bin/bash", "-c", closest_command])
 
 
 def closest_antisense(TEfile,genefile,outfile,strandedness):
@@ -421,11 +421,11 @@ def closest_antisense(TEfile,genefile,outfile,strandedness):
 	if strandedness == 0:
 		closest_list = ["bedtools", "closest", "-a",TEfile,"-b",genefile,"-D","b","-t","all","-S",">",outfile]
 		closest_command = " ".join(closest_list)
-		sp.check_call(["/bin/sh", "-c", closest_command])
+		sp.check_call(["/bin/bash", "-c", closest_command])
 	else:
 		closest_list = ["bedtools", "closest", "-a",TEfile,"-b",genefile,"-D","b","-t","all","-S",">",outfile]
 		closest_command = " ".join(closest_list)
-		sp.check_call(["/bin/sh", "-c", closest_command])    
+		sp.check_call(["/bin/bash", "-c", closest_command])    
 
 
 def intersect_wawb(TEfile,transcriptfile,outfile,strandedness):
@@ -434,11 +434,11 @@ def intersect_wawb(TEfile,transcriptfile,outfile,strandedness):
 	if strandedness == 0:
 		intersect_list = ["bedtools", "intersect", "-a",TEfile,"-b",transcriptfile,"-sorted", "-wa","-wb",">",outfile]
 		intersect_command = " ".join(intersect_list)
-		sp.check_call(["/bin/sh", "-c", intersect_command])
+		sp.check_call(["/bin/bash", "-c", intersect_command])
 	else:
 		intersect_list = ["bedtools", "intersect", "-a",TEfile,"-b",transcriptfile,"-sorted","-s","-wa", "-wb",">",outfile]
 		intersect_command = " ".join(intersect_list)
-		sp.check_call(["/bin/sh", "-c", intersect_command])
+		sp.check_call(["/bin/bash", "-c", intersect_command])
 
 def intersect_not(TEfile,transcriptfile,outfile,strandedness):
 	######## intersect WITH BED FILE #########################
@@ -446,11 +446,11 @@ def intersect_not(TEfile,transcriptfile,outfile,strandedness):
 	if strandedness == 0:
 		intersect_list = ["bedtools", "intersect", "-a",TEfile,"-b",transcriptfile,"-sorted", "-v",">",outfile]
 		intersect_command = " ".join(intersect_list)
-		sp.check_call(["/bin/sh", "-c", intersect_command])
+		sp.check_call(["/bin/bash", "-c", intersect_command])
 	else:
 		intersect_list = ["bedtools", "intersect", "-a",TEfile,"-b",transcriptfile,"-sorted","-s","-v",">",outfile]
 		intersect_command = " ".join(intersect_list)
-		sp.check_call(["/bin/sh", "-c", intersect_command])
+		sp.check_call(["/bin/bash", "-c", intersect_command])
 
 
 def intersect_loj(file1,file2,outfile,strandedness):
@@ -459,11 +459,11 @@ def intersect_loj(file1,file2,outfile,strandedness):
 	if strandedness == 0:
 		intersect_list = ["bedtools", "intersect", "-a",file1,"-b",file2,"-sorted", "-loj",">",outfile]
 		intersect_command = " ".join(intersect_list)
-		sp.check_call(["/bin/sh", "-c", intersect_command])
+		sp.check_call(["/bin/bash", "-c", intersect_command])
 	else:
 		intersect_list = ["bedtools", "intersect", "-a",file1,"-b",file2,"-sorted","-s","-loj",">",outfile]
 		intersect_command = " ".join(intersect_list)
-		sp.check_call(["/bin/sh", "-c", intersect_command])
+		sp.check_call(["/bin/bash", "-c", intersect_command])
 
 
 def merge(infile,outfile,distance,strandedness, function):
@@ -473,7 +473,7 @@ def merge(infile,outfile,distance,strandedness, function):
 		intersect_list += ["|","awk","-v", "OFS='\\t'", """'{ print $1 OFS $2 OFS $3 OFS $4 OFS $5 OFS "." }'"""]
 		intersect_list += [">",outfile]
 		intersect_command = " ".join(intersect_list)
-		sp.check_call(["/bin/sh", "-c", intersect_command])
+		sp.check_call(["/bin/bash", "-c", intersect_command])
 	else:     
 	#only merge on same strand   
 		intersect_list = ["bedtools", "merge", "-d",str(distance),"-i",infile, "-s"]
@@ -481,18 +481,18 @@ def merge(infile,outfile,distance,strandedness, function):
 		intersect_list += ["|","awk","-v", "OFS='\\t'","""'{ print $1 OFS $2 OFS $3 OFS $5 OFS $6 OFS $4 }'"""]
 		intersect_list += [">",outfile]
 		intersect_command = " ".join(intersect_list)
-		sp.check_call(["/bin/sh", "-c", intersect_command])        
+		sp.check_call(["/bin/bash", "-c", intersect_command])        
 
 
 # def make_bed(infile,outfile,strandedness):
 #     if strandedness >0:
 #         replacecommand_list = ["awk","-v", "OFS='\\t'", """'{ print $1 OFS $2 OFS $3 OFS $5 OFS $6 OFS $4 }'""",infile, ">" ,outfile]
 #         replacecommand=" ".join(replacecommand_list)
-#         sp.check_call(["/bin/sh","-c",replacecommand])
+#         sp.check_call(["/bin/bash","-c",replacecommand])
 #     else:
 #         replacecommand_list = ["awk","-v", "OFS='\\t'", """'{ print $1 OFS $2 OFS $3 OFS $5 OFS $6 OFS  "." }'""",infile, ">" ,outfile]
 #         replacecommand=" ".join(replacecommand_list)
-#         sp.check_call(["/bin/sh","-c",replacecommand])
+#         sp.check_call(["/bin/bash","-c",replacecommand])
 
 
 def get_gtf_table(outfolder,outgtf,filename):
@@ -590,14 +590,14 @@ def get_exons(gtf,exonfile):
 	exonfile_presort=exonfile+"pre"
 	awk_list = ["awk","-v", "OFS='\\t'", """'$3=="exon"'""",gtf,">",exonfile_presort]
 	awk_command = " ".join(awk_list)
-	sp.check_call(["/bin/sh", "-c", awk_command])  
+	sp.check_call(["/bin/bash", "-c", awk_command])  
 	sort_coord(exonfile_presort,exonfile,1,4)
 	os.unlink(exonfile_presort)
 
 def get_exp_TE(TEfile,expfile):
 	awk_list = ["awk","-v", "OFS='\\t'", """'$5 > 0.01 && $8 > 5'""",TEfile,">",expfile]
 	awk_command = " ".join(awk_list)
-	sp.check_call(["/bin/sh", "-c", awk_command]) 
+	sp.check_call(["/bin/bash", "-c", awk_command]) 
 
 
 def tx_loop(outdis,gene_dict,tx_gene_dict,splicedTE_dict,splice_site_dict,merged_dict,basename,strandedness,tempflag):
@@ -797,7 +797,7 @@ def label_files(file_in,file_out, string,debug):
 	command = "'{print $0," + '"' + string + '"' + "}'"
 	pastecommandlist = ["awk", "-v", "OFS='\\t'",command,file_in, ">", file_out]
 	pastecommand = " ".join(pastecommandlist)
-	sp.check_call(["/bin/sh","-c",pastecommand])
+	sp.check_call(["/bin/bash","-c",pastecommand])
 	if not debug:
 		os.unlink(file_in)
 
