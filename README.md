@@ -72,25 +72,25 @@ Once conda is installed, follow the following instructions to install SQuIRE wit
 Once conda is installed, follow the following instructions to install SQuIRE with mamba.
 
 1. Configure conda
-  * Add conda channels in the following order:
-    * `conda config --add channels bioconda`
-    * `conda config --add channels conda-forge`
-  * Check that the channels are listed in the following order:
-    * `channels:`
-        `- conda-forge`
-        `- bioconda` 
-        `- defaults`
-    * To view your configuration, run `cat .condarc` in the directory where conda was installed.
-    * Each channel has a higher priority than those listed below it. Conda will install packages from a higher priority channel over any version from a lower priority channel by default.
-  * Check that channel priority is set to flexible with `conda config --describe channel_priority`
-    * Channel priority should be set to flexible by default but if not run `conda config --set channel_priority flexible`
+    * Add conda channels in the following order:
+      * `conda config --add channels bioconda`
+      * `conda config --add channels conda-forge`
+    * Check that the channels are listed in the following order:
+      * `channels:`  
+         `- conda-forge`  
+         `- bioconda`  
+         `- defaults`
+      * To view your configuration, run `cat .condarc` in the directory where conda was installed.
+      * Each channel has a higher priority than those listed below it. Conda will install packages from a higher priority channel over any version from a lower priority channel by default.
+    * Check that channel priority is set to flexible with `conda config --describe channel_priority`
+      * Channel priority should be set to flexible by default but if not run `conda config --set channel_priority flexible`
 
 2. Install mamba in the base environment
-  * `conda install mamba -n base -c conda-forge`
+    * `conda install mamba -n base -c conda-forge`
 
 3. Create a new environment and install SQuIRE in it
-  * `mamba create -n squire -c bioconda squire`
-  * To begin using SQuIRE, activate the environment: `conda activate squire`
+    * `mamba create -n squire -c bioconda squire`
+    * To begin using SQuIRE, activate the environment: `conda activate squire`
 
 ### Notes ###
 
