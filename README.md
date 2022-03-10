@@ -4,7 +4,7 @@
 
 [Installation](#installation)
 
-[SQuIRE Pipeline Overview](#pipeline)
+[SQuIRE Pipeline Overview](#pipeline-overview)
 
 [SQuIRE Pipeline Options](#arguments-for-each-step)
 
@@ -20,75 +20,48 @@ Wan R Yang, Daniel Ardeljan, Clarissa N Pacyna, Lindsay M Payer, Kathleen H Burn
 
 ## Installation ##
 
-SQuIRE can be installed using either [mamba](https://github.com/mamba-org/mamba) or [pip](https://pip.pypa.io/en/stable/).
+SQuIRE is available on [bioconda](https://bioconda.github.io/index.html) and can be installed using [conda](https://anaconda.org/). We suggest running conda with [mamba](https://github.com/mamba-org/mamba) for speedup.
 
-Conda is a package manager that installs and runs packages and their dependencies; mamba is a reimplementation of conda in C++ with faster dependency solving. Conda also creates virtual environments and allows users to switch between those environments. Pip is a package manager for Python packages. 
+Conda is a package manager that installs and runs packages and their dependencies. Conda also creates virtual environments and allows users to switch between those environments. Mamba is a reimplementation of conda in C++ with faster dependency solving. 
 
-The instructions below install conda and create a virtual environment in which to install software required by SQuIRE. Following these instructions ensures that SQuIRE has the correct software versions and dependencies and prevents software conflicts.
+The instructions below install conda, mamba, and a conda virtual environment for SQuIRE. 
 
-1. Download Miniconda from https://conda.io/miniconda.html
+1. Download Miniconda (a lightweight distribution of conda) from https://conda.io/miniconda.html
     * `wget -c https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh`
     * Documentation will appear as the software downloads
 
-2. Execute the installer and add to PATH in .bashrc
+2. Run the Miniconda installer
     * `bash Miniconda3-latest-Linux-x86_64.sh`
     * Press ENTER key to review the Miniconda license
     * Type `yes` to approve the license terms
     * Pres ENTER key to confirm install locatino (or enter a preferred location)
     * Type `yes` to add Miniconda2 into your PATH
 
-3. Add PATH to .bash_profile as well
-    *  `tail -n1 ~/.bashrc >> ~/.bash_profile`
-
-4. Restart shell
+3. Restart shell
     * `exec $SHELL`
 
-### Install with pip ###
-
-Once conda is installed, follow the following instructions to install SQuIRE with pip.
-
-1. Create new virtual environment
-    * `conda create --name squire --override-channels -c iuc -c bioconda -c conda-forge -c defaults -c r python=2.7.13 bioconductor-deseq2=1.16.1 r-base=3.4.1 r-pheatmap bioconductor-vsn bioconductor-biocparallel=1.12.0 r-ggrepel  star=2.5.3a  bedtools=2.25.0 samtools=1.1 stringtie=1.3.3 igvtools=2.3.93  ucsc-genepredtobed  ucsc-gtftogenepred  ucsc-genepredtogtf  ucsc-bedgraphtobigwig r-hexbin `
-
-    * Type `y` to proceed.
-
-2. Activate the virtual environment
-    * `source activate squire`  
-    * **Enter this command each time you wish to use the SQuIRE pipeline**
-    * The conda installation message may instruct the use of 'conda activate squire'. However, this is a newer and less stable usage than "source activate squire", which we recommend.
-
-3. Install SQuIRE in the virtual environment with git
-    * Determine if git is installed:
-      * `git --version`
-      * If an error occurs, install git with `conda install --override-channels -c iuc -c bioconda -c conda-forge -c defaults git=2.11.1`
-    * Copy the SQuIRE software from the Git repository onto your local installation:
-      * `git clone https://github.com/wyang17/SQuIRE; cd SQuIRE; pip install -e .`
-      * The `-e` parameter for "pip install" automatially affects the current SQuIRE installation, so that there is no need to re-install SQuIRE with a new version.
-    * To update SQuIRE, go to the SQuIRE folder and enter:
-      *  `git pull`
-
-### Install with mamba ###
-
-Once conda is installed, follow the following instructions to install SQuIRE with mamba.
-
-1. Configure conda
+4. Configure conda channel priority
     * Add conda channels in the following order:
-      * `conda config --add channels bioconda`
-      * `conda config --add channels conda-forge`
-    * Check that the channels are listed in the following order:
-      * `channels:`  
-         `- conda-forge`  
-         `- bioconda`  
-         `- defaults`
-      * To view your configuration, run `cat .condarc` in the directory where conda was installed.
+      ```
+      conda config --add channels defaults 
+      conda config --add channels bioconda
+      conda config --add channels conda-forge
+      ```
+    * Confirm that the channels are listed in the following order by running `cat $(dirname $CONDA_PREFIX)/.condarc`:
+      ```
+      channels:
+         - conda-forge
+         - bioconda
+         - defaults
+      ```
       * Each channel has a higher priority than those listed below it. Conda will install packages from a higher priority channel over any version from a lower priority channel by default.
     * Check that channel priority is set to flexible with `conda config --describe channel_priority`
-      * Channel priority should be set to flexible by default but if not run `conda config --set channel_priority flexible`
+      * Channel priority should be set to flexible by default. If it is not, run `conda config --set channel_priority flexible`
 
-2. Install mamba in the base environment
+5. Install mamba in the base environment 
     * `conda install mamba -n base -c conda-forge`
 
-3. Create a new environment and install SQuIRE in it
+6. Create a new environment and install SQuIRE!
     * `mamba create -n squire -c bioconda squire`
     * To begin using SQuIRE, activate the environment: `conda activate squire`
 
