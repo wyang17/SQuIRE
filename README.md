@@ -65,6 +65,8 @@ The instructions below install conda, mamba, and a conda virtual environment for
     * `mamba create -n squire -c bioconda squire`
     * To begin using SQuIRE, activate the environment: `conda activate squire`
 
+Many thanks to Rohini Gadde for setting up the SQuIRE Bioconda package!
+
 ### Notes ###
 
 _*SQuIRE is compatible with the following specific versions of software:_*
