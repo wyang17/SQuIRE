@@ -86,7 +86,7 @@ def sort_coord(infile, outfile,chrcol,startcol):
     startfieldsort = "-k" + str(startcol) + "," + str(startcol) + "n"
     sort_command_list = ["sort",chrfieldsort,startfieldsort, infile, ">", outfile]
     sort_command = " ".join(sort_command_list)
-    sp.check_call(["/bin/sh", "-c", sort_command])
+    sp.check_call(["/bin/bash", "-c", sort_command])
 
 def get_basename(filepath):
         filename = os.path.basename(filepath)
@@ -169,13 +169,13 @@ def main(**kwargs):
                 make_folder = new_package_path + "/" "bedtools2"
                 make_command_list = ["make"]
                 make_command = "".join(make_command_list)
-                sp.check_call(["/bin/sh", "-c", make_command],cwd = make_folder)
+                sp.check_call(["/bin/bash", "-c", make_command],cwd = make_folder)
                 new_package_path = make_folder + "/" + "bin"
             elif "samtools" in package:
                 make_folder = new_package_path + "/" "samtools-1.1"
                 make_command_list = ["make"]
                 make_command = "".join(make_command_list)
-                sp.check_call(["/bin/sh", "-c", make_command],cwd = make_folder)
+                sp.check_call(["/bin/bash", "-c", make_command],cwd = make_folder)
                 new_package_path = make_folder
             elif "STAR" in package:
                 new_package_path = new_package_path + "/STAR-2.5.3a/bin/Linux_x86_64"

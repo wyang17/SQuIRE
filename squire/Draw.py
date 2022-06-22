@@ -55,7 +55,7 @@ def filter_files(file_in,file_out, string, column):
     command = "'$" + str(column) + "==" + '"' + string + '"'+ "'"
     pastecommandlist = ["awk", "-v", "OFS='\\t'",command,file_in, ">", file_out]
     pastecommand = " ".join(pastecommandlist)
-    sp.check_call(["/bin/sh","-c",pastecommand])
+    sp.check_call(["/bin/bash","-c",pastecommand])
 
 def rename_file(oldname,newname):
     shutil.move(oldname, newname)
@@ -80,7 +80,7 @@ def sort_coord(infile, outfile,chrcol,startcol):
     startfieldsort = "-k" + str(startcol) + "," + str(startcol) + "n"
     sort_command_list = ["sort",chrfieldsort,startfieldsort, infile, ">", outfile]
     sort_command = " ".join(sort_command_list)
-    sp.check_call(["/bin/sh", "-c", sort_command])
+    sp.check_call(["/bin/bash", "-c", sort_command])
     os.unlink(infile)
 
 def bedgraph(infile,strandedness,outfolder,basename,normlib,pthreads,bedgraph_list):
@@ -110,7 +110,7 @@ def bedgraph(infile,strandedness,outfolder,basename,normlib,pthreads,bedgraph_li
         normalization=["""--outWigNorm""", "RPM"]
     STARcommand_list = ["STAR","""--runMode""","inputAlignmentsFromBAM","""--runThreadN""",str(pthreads)] + inputs + outputs + normalization
     STARcommand=" ".join(STARcommand_list)
-    sp.check_call(["/bin/sh", "-c", STARcommand])
+    sp.check_call(["/bin/bash", "-c", STARcommand])
 
     if strandedness !=0:
         sort_coord(plus_bedgraph_unique,outfolder + "/" + basename + "_plus_unique.bedgraph",1,2)
@@ -129,7 +129,7 @@ def make_bigwig(chrominfo,bedgraph_list):
         outfile=bedgraph + ".bw"
         igvcommand_list = ["bedGraphToBigWig",bedgraph, chrominfo,outfile] 
         igvcommand=" ".join(igvcommand_list)
-        sp.check_call(["/bin/sh", "-c", igvcommand])
+        sp.check_call(["/bin/bash", "-c", igvcommand])
         
 
 def main(**kwargs):
